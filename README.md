@@ -1,4 +1,4 @@
-# apiman-plugins-session
+# apiman-plugins-session [![Build Status](https://travis-ci.org/outofcoffee/apiman-plugins-session.svg?branch=master)](https://travis-ci.org/outofcoffee/apiman-plugins-session)
 
 A suite of _apiman_ plugins providing simple web session management.
 
