@@ -1,0 +1,6 @@
+{
+  "validationType": "ValidationOptional",
+  "cookieName": "XSESSION",
+  "authHeaderName": "X-Authenticated-Principal",
+  "pathMatcher": ".*"
+}

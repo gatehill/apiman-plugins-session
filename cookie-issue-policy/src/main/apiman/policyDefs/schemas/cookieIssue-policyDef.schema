@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Cookie Issuer Policy Configuration",
+  "type": "object",
+  "properties": {
+    "cookieName": {
+      "title": "Cookie Name",
+      "description": "The name of the session cookie to set in the response",
+      "type": "string"
+    },
+    "cookiePath": {
+      "title": "Cookie Path",
+      "description": "The path to set for the session cookie",
+      "type": "string"
+    },
+    "cookieSecure": {
+      "title": "Cookie Secure",
+      "description": "Whether the session cookie should be marked as secure",
+      "type": "boolean"
+    },
+    "cookieHttpOnly": {
+      "title": "Cookie HTTP only",
+      "description": "Whether the session cookie should be marked as HTTP only",
+      "type": "boolean"
+    },
+    "apiResponseCode": {
+      "title": "API Response Code",
+      "description": "The response code from the API that indicates successful authentication",
+      "type": "integer"
+    },
+    "apiResponseFieldName": {
+      "title": "API Response Field Name",
+      "description": "The JSON property in the API response that holds the authenticated ID",
+      "type": "string"
+    },
+    "validityPeriod": {
+      "title": "Session Validity Period",
+      "description": "The session validity period in seconds",
+      "type": "integer"
+    },
+    "responseBehaviour": {
+      "title": "Successful Response Behaviour",
+      "description": "Whether to pass through a successful authentication response or redirect the caller to another location",
+      "type": "string",
+      "enum": [
+        "PassThrough",
+        "Redirect"
+      ]
+    },
+    "redirectUrl": {
+      "title": "Redirect URL",
+      "description": "The location to redirect the user to on successful authentication (see Response Behavior)",
+      "type": "string"
+    },
+    "pathMatcher": {
+      "title": "Path Matcher",
+      "description": "A regular expression indicating the path(s) to which this policy should be applied",
+      "type": "string"
+    }
+  }
+}

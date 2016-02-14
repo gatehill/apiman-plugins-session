@@ -1,0 +1,51 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.apiman.plugins</groupId>
+    <artifactId>apiman-plugins</artifactId>
+    <version>1.2.1.Final</version>
+  </parent>
+  <artifactId>apiman-plugins-session</artifactId>
+  <version>1.2.1.Final</version>
+  <name>apiman-plugins-session</name>
+  <packaging>pom</packaging>
+
+  <description>This module contains session management plugins for apiman.</description>
+  <url>http://apiman.io/</url>
+  <inceptionYear>2015</inceptionYear>
+
+  <licenses>
+    <license>
+      <name>Apache License Version 2.0</name>
+      <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+ <developers>
+    <developer>
+      <name>Pete Cornish</name>
+      <id>pcornish</id>
+      <email>outofcoffee@gmail.com</email>
+      <roles>
+        <role>Tech Lead</role>
+        <role>Developer</role>
+      </roles>
+    </developer>
+  </developers>
+
+  <properties>
+    <version.org.slf4j>1.7.2</version.org.slf4j>
+  </properties>
+
+  <modules>
+    <module>common</module>
+    <module>common-test</module>
+    <module>cookie-issue-policy</module>
+    <module>cookie-validate-policy</module>
+    <module>cookie-remove-policy</module>
+  </modules>
+
+</project>
+

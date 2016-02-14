@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Cookie Validator Policy Configuration",
+  "type": "object",
+  "properties": {
+    "validationType": {
+      "title": "Validation Type",
+      "description": "The type of validation to perform on the request cookie",
+      "type": "string",
+      "enum": [
+        "NoValidation",
+        "ValidationRequired",
+        "ValidationOptional"
+      ]
+    },
+    "cookieName": {
+      "title": "Cookie Name",
+      "description": "The name of the request cookie to validate",
+      "type": "string"
+    },
+    "authHeaderName": {
+      "title": "Authenticated Header Name",
+      "description": "The name of the header to set in the request to the API",
+      "type": "string"
+    },
+    "pathMatcher": {
+      "title": "Path Matcher",
+      "description": "A regular expression indicating the path(s) to which this policy should be applied",
+      "type": "string"
+    }
+  }
+}

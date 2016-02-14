@@ -1,0 +1,9 @@
+{
+  "cookieName": "XSESSION",
+  "cookiePath": "/",
+  "invalidateSession": true,
+  "responseBehaviour": "Redirect",
+  "redirectUrl": "/another/url",
+  "skipBackendCall": true,
+  "pathMatcher": ".*"
+}

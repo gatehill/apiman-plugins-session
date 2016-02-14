@@ -1,0 +1,6 @@
+{
+  "frameworkVersion" : 1.0,
+  "name" : "Cookie Remover Policy Plugin",
+  "description" : "This plugin removes a cookie.",
+  "version" : "${project.version}"
+}

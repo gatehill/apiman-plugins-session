@@ -1,0 +1,14 @@
+target/
+bin/
+.classpath
+.project
+.settings/
+.gwt
+.checkstyle
+.errai
+gwt-unitCache
+.DS_Store
+*~
+*.iml
+.idea
+\#*\#

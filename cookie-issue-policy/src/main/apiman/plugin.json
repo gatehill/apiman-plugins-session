@@ -1,0 +1,6 @@
+{
+  "frameworkVersion" : 1.0,
+  "name" : "Cookie Issuer Policy Plugin",
+  "description" : "This plugin issues a session cookie.",
+  "version" : "${project.version}"
+}

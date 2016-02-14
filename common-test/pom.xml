@@ -1,0 +1,54 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.apiman.plugins</groupId>
+    <artifactId>apiman-plugins-session</artifactId>
+    <version>1.2.1.Final</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <artifactId>apiman-plugins-session-common-test</artifactId>
+  <name>apiman-plugins-session-common-test</name>
+
+  <dependencies>
+    <!-- apiman dependencies (must be excluded from the WAR) -->
+    <dependency>
+      <groupId>io.apiman</groupId>
+      <artifactId>apiman-gateway-engine-core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.apiman</groupId>
+      <artifactId>apiman-gateway-engine-policies</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <!-- common-->
+    <dependency>
+      <groupId>io.apiman.plugins</groupId>
+      <artifactId>apiman-plugins-session-common</artifactId>
+      <version>1.2.1.Final</version>
+    </dependency>
+    <dependency>
+      <groupId>io.apiman</groupId>
+      <artifactId>apiman-test-policies</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+  </dependencies>
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+      </resource>
+    </resources>
+  </build>
+</project>

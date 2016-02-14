@@ -1,0 +1,6 @@
+{
+  "frameworkVersion" : 1.0,
+  "name" : "Cookie Validator Policy Plugin",
+  "description" : "This plugin validates a request cookie.",
+  "version" : "${project.version}"
+}

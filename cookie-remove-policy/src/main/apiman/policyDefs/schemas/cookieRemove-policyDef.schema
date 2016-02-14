@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Cookie Remover Policy Configuration",
+  "type": "object",
+  "properties": {
+    "cookieName": {
+      "title": "Cookie Name",
+      "description": "The name of the cookie to remove",
+      "type": "string"
+    },
+    "cookiePath": {
+      "title": "Cookie Path",
+      "description": "The path of the cookie to remove",
+      "type": "string"
+    },
+    "invalidateSession": {
+      "title": "Invalidate Session",
+      "description": "Whether to invalidate the session",
+      "type": "boolean"
+    },
+    "responseBehaviour": {
+      "title": "Successful Response Behaviour",
+      "description": "Whether to pass through a successful authentication response or redirect the caller to another location",
+      "type": "string",
+      "enum": [
+        "PassThrough",
+        "Redirect"
+      ]
+    },
+    "redirectUrl": {
+      "title": "Redirect URL",
+      "description": "The location to redirect the user to on successful authentication (see Response Behavior)",
+      "type": "string"
+    },
+    "skipBackendCall": {
+      "title": "Skip Back-end Call",
+      "description": "Skip the call to the back-end API",
+      "type": "boolean"
+    },
+    "pathMatcher": {
+      "title": "Path Matcher",
+      "description": "A regular expression indicating the path(s) to which this policy should be applied",
+      "type": "string"
+    }
+  }
+}

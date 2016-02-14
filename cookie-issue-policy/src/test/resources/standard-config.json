@@ -1,0 +1,12 @@
+{
+  "apiResponseCode": 200,
+  "cookieName": "XSESSION",
+  "cookiePath": "/",
+  "cookieSecure": true,
+  "cookieHttpOnly": true,
+  "apiResponseFieldName": "username",
+  "validityPeriod": 120,
+  "responseBehaviour": "Redirect",
+  "redirectUrl": "/another/url",
+  "pathMatcher": ".*"
+}

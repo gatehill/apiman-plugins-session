@@ -1,0 +1,8 @@
+{
+  "cookieName": "XSESSION",
+  "cookiePath": "/",
+  "invalidateSession": true,
+  "responseBehaviour": "PassThrough",
+  "skipBackendCall": false,
+  "pathMatcher": ".*"
+}
