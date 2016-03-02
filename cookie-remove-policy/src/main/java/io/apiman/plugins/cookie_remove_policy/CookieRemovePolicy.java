@@ -108,15 +108,15 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
         Cookie cookie = CookieUtil.getCookie(request, config.getCookieName());
         
         // cookie is absent - force removal anyway?
-        if (null == cookie && Boolean.TRUE.equals(config.getForceCookieRemoval())) {
+        if (null == cookie && config.getForceCookieRemoval()) {
             LOGGER.warn(MESSAGES.format("CookieRemovePolicy.CookieAbsentForceRemoval", config.getCookieName()));
             cookie = new Cookie(config.getCookieName(), "");
         }
         
         if (null == cookie) {
             // cookie is absent - continue
-            LOGGER.warn(MESSAGES.format("CookieRemovePolicy.CookieAbsent", config.getCookieName()));
-            success(request, context, config, chain);
+            LOGGER.warn(MESSAGES.format("CookieRemovePolicy.CookieAbsentSkipRemoval", config.getCookieName()));
+            doContinue(request, context, config, chain);
 
         } else {
             // mark cookie for removal
@@ -126,7 +126,7 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
             if (StringUtils.isEmpty(sessionId)) {
                 // cookie is empty - continue
                 LOGGER.warn(MESSAGES.format("CookieRemovePolicy.CookieEmpty", config.getCookieName()));
-                success(request, context, config, chain);
+                doContinue(request, context, config, chain);
 
             } else {
                 if (config.getInvalidateSession()) {
@@ -137,7 +137,7 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
                     LOGGER.debug(MESSAGES.format("CookieRemovePolicy.InvalidationDisabled", sessionId));
 
                     // continue
-                    success(request, context, config, chain);
+                    doContinue(request, context, config, chain);
                 }
             }
         }
@@ -230,8 +230,8 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
      * @param config  the policy configuration
      * @param chain   the policy chain
      */
-    private void success(ApiRequest request, IPolicyContext context, CookieRemoveConfigBean config,
-                         IPolicyChain<ApiRequest> chain) {
+    private void doContinue(ApiRequest request, IPolicyContext context, CookieRemoveConfigBean config,
+                            IPolicyChain<ApiRequest> chain) {
 
         if (config.getSkipBackendCall()) {
             // don't call the back-end service
@@ -281,7 +281,7 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
                 if (result.isSuccess()) {
                     // session data removed
                     LOGGER.info(MESSAGES.format("CookieRemovePolicy.SessionInvalidated", sessionId));
-                    success(request, context, config, chain);
+                    doContinue(request, context, config, chain);
 
                 } else {
                     // failed to remove session data
