@@ -14,6 +14,8 @@ public class CookieRemoveConfigBean extends AbstractCookieConfigBean {
     private Boolean invalidateSession;
     @JsonProperty
     private Boolean skipBackendCall;
+    @JsonProperty
+    private Boolean forceCookieRemoval;
 
     public Boolean getInvalidateSession() {
         return invalidateSession;
@@ -29,5 +31,13 @@ public class CookieRemoveConfigBean extends AbstractCookieConfigBean {
 
     public void setSkipBackendCall(Boolean skipBackendCall) {
         this.skipBackendCall = skipBackendCall;
+    }
+
+    public Boolean getForceCookieRemoval() {
+        return forceCookieRemoval;
+    }
+
+    public void setForceCookieRemoval(Boolean forceCookieRemoval) {
+        this.forceCookieRemoval = forceCookieRemoval;
     }
 }

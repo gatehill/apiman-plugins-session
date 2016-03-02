@@ -63,6 +63,7 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
                 .validate(config.getInvalidateSession(), "Invalidate session setting")
                 .validate(config.getCookieName(), "Cookie name")
                 .validate(config.getSkipBackendCall(), "Skip backend call setting")
+                .validate(config.getForceCookieRemoval(), "Force cookie removal setting")
                 .validate(config.getResponseBehaviour(), "Response behaviour")
                 .validate(new ConfigValidator.Validator() {
                     @Override
@@ -104,24 +105,30 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
             return;
         }
 
-        final Cookie cookie = CookieUtil.getCookie(request, config.getCookieName());
+        Cookie cookie = CookieUtil.getCookie(request, config.getCookieName());
+        
+        // cookie is absent - force removal anyway?
+        if (null == cookie && Boolean.TRUE.equals(config.getForceCookieRemoval())) {
+            LOGGER.warn(MESSAGES.format("CookieRemovePolicy.CookieAbsentForceRemoval", config.getCookieName()));
+            cookie = new Cookie(config.getCookieName(), "");
+        }
+        
         if (null == cookie) {
             // cookie is absent - continue
             LOGGER.warn(MESSAGES.format("CookieRemovePolicy.CookieAbsent", config.getCookieName()));
             success(request, context, config, chain);
 
         } else {
-            final String sessionId = cookie.getValue();
+            // mark cookie for removal
+            context.setAttribute(ATTRIBUTE_REMOVE_COOKIE, cookie);
 
+            final String sessionId = cookie.getValue();
             if (StringUtils.isEmpty(sessionId)) {
                 // cookie is empty - continue
                 LOGGER.warn(MESSAGES.format("CookieRemovePolicy.CookieEmpty", config.getCookieName()));
                 success(request, context, config, chain);
 
             } else {
-                // cookie is present - mark for removal
-                context.setAttribute(ATTRIBUTE_REMOVE_COOKIE, cookie);
-
                 if (config.getInvalidateSession()) {
                     LOGGER.debug(MESSAGES.format("CookieRemovePolicy.AttemptingInvalidation", sessionId));
                     invalidateSession(sessionId, request, context, chain, config);

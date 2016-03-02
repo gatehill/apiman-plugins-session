@@ -4,5 +4,6 @@
   "invalidateSession": true,
   "responseBehaviour": "PassThrough",
   "skipBackendCall": false,
+  "forceCookieRemoval": false,
   "pathMatcher": ".*"
 }
