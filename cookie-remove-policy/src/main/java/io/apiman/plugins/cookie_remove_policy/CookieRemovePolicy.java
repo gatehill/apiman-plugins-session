@@ -60,31 +60,28 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
 
         // validate configuration
         final ConfigValidator validator = ConfigValidator.build()
-                .validate(config.getInvalidateSession(), "Invalidate session setting")
-                .validate(config.getCookieName(), "Cookie name")
-                .validate(config.getSkipBackendCall(), "Skip backend call setting")
-                .validate(config.getForceCookieRemoval(), "Force cookie removal setting")
-                .validate(config.getResponseBehaviour(), "Response behaviour")
-                .validate(new ConfigValidator.Validator() {
+                .validate("Invalidate session setting", config.getInvalidateSession())
+                .validate("Cookie name", config.getCookieName())
+                .validate("Skip backend call setting", config.getSkipBackendCall())
+                .validate("Force cookie removal setting", config.getForceCookieRemoval())
+                .validate("Response behaviour", config.getResponseBehaviour())
+                .validate("Path matcher", config.getPathMatcher())
+                .validate("Redirect URL", new ConfigValidator.Validator() {
                     @Override
                     public boolean isValid() {
                         // redirect URL should be set
                         return (ResponseBehaviour.PassThrough.equals(config.getResponseBehaviour()) ||
                                 StringUtils.isNotBlank(config.getRedirectUrl()));
                     }
-                }, "Redirect URL");
+                });
 
         if (!validator.isValid()) {
             throw new InvalidConfigurationException(MESSAGES.formatEach(
-                    "CookieRemovePolicy.ConfigNotSet", validator.getValidationErrors()));
+                    "ConfigNotSet", validator.getValidationErrors()));
         }
 
-        // configure path matcher
-        if (StringUtils.isNotBlank(config.getPathMatcher())) {
-            pathMatcher = Pattern.compile(config.getPathMatcher());
-        } else {
-            LOGGER.warn(MESSAGES.format("CookieRemovePolicy.PathMatcherNotSet"));
-        }
+        // precompile path matcher for performance
+        pathMatcher = Pattern.compile(config.getPathMatcher());
 
         return config;
     }
@@ -98,7 +95,7 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
 
         // skip if path matcher is not use, or request URL doesn't match
         if (null == pathMatcher || !pathMatcher.matcher(request.getDestination()).matches()) {
-            LOGGER.debug(MESSAGES.format("CookieRemovePolicy.PathMatchFalse"));
+            LOGGER.debug(MESSAGES.format("PathMatchFalse"));
 
             context.setAttribute(ATTRIBUTE_SKIP, true);
             chain.doApply(request);
@@ -109,13 +106,13 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
         
         // cookie is absent - force removal anyway?
         if (null == cookie && config.getForceCookieRemoval()) {
-            LOGGER.warn(MESSAGES.format("CookieRemovePolicy.CookieAbsentForceRemoval", config.getCookieName()));
+            LOGGER.warn(MESSAGES.format("CookieAbsentForceRemoval", config.getCookieName()));
             cookie = new Cookie(config.getCookieName(), "");
         }
         
         if (null == cookie) {
             // cookie is absent - continue
-            LOGGER.warn(MESSAGES.format("CookieRemovePolicy.CookieAbsentSkipRemoval", config.getCookieName()));
+            LOGGER.warn(MESSAGES.format("CookieAbsentSkipRemoval", config.getCookieName()));
             doContinue(request, context, config, chain);
 
         } else {
@@ -125,16 +122,16 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
             final String sessionId = cookie.getValue();
             if (StringUtils.isEmpty(sessionId)) {
                 // cookie is empty - continue
-                LOGGER.warn(MESSAGES.format("CookieRemovePolicy.CookieEmpty", config.getCookieName()));
+                LOGGER.warn(MESSAGES.format("CookieEmpty", config.getCookieName()));
                 doContinue(request, context, config, chain);
 
             } else {
                 if (config.getInvalidateSession()) {
-                    LOGGER.debug(MESSAGES.format("CookieRemovePolicy.AttemptingInvalidation", sessionId));
+                    LOGGER.debug(MESSAGES.format("AttemptingInvalidation", sessionId));
                     invalidateSession(sessionId, request, context, chain, config);
 
                 } else {
-                    LOGGER.debug(MESSAGES.format("CookieRemovePolicy.InvalidationDisabled", sessionId));
+                    LOGGER.debug(MESSAGES.format("InvalidationDisabled", sessionId));
 
                     // continue
                     doContinue(request, context, config, chain);
@@ -160,11 +157,11 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
         if (null != cookie) {
             removeCookie(response, config, cookie);
         } else {
-            LOGGER.debug(MESSAGES.format("CookieRemovePolicy.RemovalSkipped"));
+            LOGGER.debug(MESSAGES.format("RemovalSkipped"));
         }
 
         if (ResponseBehaviour.Redirect.equals(config.getResponseBehaviour())) {
-            LOGGER.info(MESSAGES.format("CookieRemovePolicy.Redirecting", config.getRedirectUrl()));
+            LOGGER.info(MESSAGES.format("Redirecting", config.getRedirectUrl()));
 
             // remove existing Content-Length header before continuing chain, as API response will not be returned
             response.getHeaders().remove(Constants.HEADER_CONTENT_LENGTH);
@@ -235,7 +232,7 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
 
         if (config.getSkipBackendCall()) {
             // don't call the back-end service
-            LOGGER.info(MESSAGES.format("CookieRemovePolicy.SkippingBackEndCall"));
+            LOGGER.info(MESSAGES.format("SkippingBackEndCall"));
 
             context.setConnectorInterceptor(new ShortcircuitConnectorInterceptor());
             chain.doSkip(request);
@@ -258,7 +255,7 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
         cookie.setPath(config.getCookiePath());
 
         // invalidate cookie in the response
-        LOGGER.debug(MESSAGES.format("CookieRemovePolicy.AttemptingRemoval"));
+        LOGGER.debug(MESSAGES.format("AttemptingRemoval"));
         CookieUtil.removeCookie(response, cookie);
     }
 
@@ -280,13 +277,13 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
             public void handle(IAsyncResult<Void> result) {
                 if (result.isSuccess()) {
                     // session data removed
-                    LOGGER.info(MESSAGES.format("CookieRemovePolicy.SessionInvalidated", sessionId));
+                    LOGGER.info(MESSAGES.format("SessionInvalidated", sessionId));
                     doContinue(request, context, config, chain);
 
                 } else {
                     // failed to remove session data
                     final String failureMessage = MESSAGES.format(
-                            "CookieRemovePolicy.SessionInvalidationFailed", sessionId);
+                            "SessionInvalidationFailed", sessionId);
                     LOGGER.error(failureMessage, result.getError());
 
                     // policy failure

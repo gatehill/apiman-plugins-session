@@ -181,7 +181,6 @@ public class CookieRemovePolicyTest extends ApimanPolicyTest {
     @BackEndApi(EchoBackEndApi.class)
     public void testLogoutSuccessWithRedirect() throws Throwable {
         callAndExpect302Redirect();
-
     }
 
     /**

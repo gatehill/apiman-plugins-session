@@ -62,31 +62,28 @@ public class CookieIssuePolicy extends AbstractMappedDataPolicy<CookieIssueConfi
 
         // validate configuration
         final ConfigValidator validator = ConfigValidator.build()
-                .validate(config.getApiResponseCode(), "API response code")
-                .validate(config.getCookieName(), "Cookie name")
-                .validate(config.getApiResponseFieldName(), "API response field name")
-                .validate(config.getValidityPeriod(), "Session validity period")
-                .validate(config.getResponseBehaviour(), "Response behaviour")
-                .validate(new ConfigValidator.Validator() {
+                .validate("API response code", config.getApiResponseCode())
+                .validate("Cookie name", config.getCookieName())
+                .validate("API response field name", config.getApiResponseFieldName())
+                .validate("Session validity period", config.getValidityPeriod())
+                .validate("Response behaviour", config.getResponseBehaviour())
+                .validate("Path matcher", config.getPathMatcher())
+                .validate("Redirect URL", new ConfigValidator.Validator() {
                     @Override
                     public boolean isValid() {
                         // redirect URL should be set
                         return (ResponseBehaviour.PassThrough.equals(config.getResponseBehaviour()) ||
                                 StringUtils.isNotBlank(config.getRedirectUrl()));
                     }
-                }, "Redirect URL");
+                });
 
         if (!validator.isValid()) {
             throw new InvalidConfigurationException(MESSAGES.formatEach(
-                    "CookieIssuePolicy.ConfigNotSet", validator.getValidationErrors()));
+                    "ConfigNotSet", validator.getValidationErrors()));
         }
 
-        // configure path matcher
-        if (StringUtils.isNotBlank(config.getPathMatcher())) {
-            pathMatcher = Pattern.compile(config.getPathMatcher());
-        } else {
-            LOGGER.warn(MESSAGES.format("CookieIssuePolicy.PathMatcherNotSet"));
-        }
+        // precompile path matcher for performance
+        pathMatcher = Pattern.compile(config.getPathMatcher());
 
         return config;
     }
@@ -115,14 +112,14 @@ public class CookieIssuePolicy extends AbstractMappedDataPolicy<CookieIssueConfi
 
         // short-circuit
         if (context.getAttribute(ATTRIBUTE_SKIP, false)) {
-            LOGGER.debug(MESSAGES.format("CookieIssuePolicy.PathMatchFalse"));
+            LOGGER.debug(MESSAGES.format("PathMatchFalse"));
             chain.doApply(response);
             return;
         }
 
         // validate the API response code
         if (response.getCode() != config.getApiResponseCode()) {
-            LOGGER.warn(MESSAGES.format("CookieIssuePolicy.ApiResponseCodeInvalid",
+            LOGGER.warn(MESSAGES.format("ApiResponseCodeInvalid",
                     response.getCode(), config.getApiResponseCode()));
 
             chain.doFailure(new PolicyFailure(PolicyFailureType.Authentication, HttpURLConnection.HTTP_UNAUTHORIZED,
@@ -140,11 +137,11 @@ public class CookieIssuePolicy extends AbstractMappedDataPolicy<CookieIssueConfi
         // set the response cookie
         CookieUtil.addResponseCookie(response, cookie);
 
-        LOGGER.info(MESSAGES.format("CookieIssuePolicy.ApiResponseCodeValid",
+        LOGGER.info(MESSAGES.format("ApiResponseCodeValid",
                 config.getApiResponseCode(), config.getCookieName(), sessionId));
 
         if (ResponseBehaviour.Redirect.equals(config.getResponseBehaviour())) {
-            LOGGER.info(MESSAGES.format("CookieIssuePolicy.Redirecting", config.getRedirectUrl()));
+            LOGGER.info(MESSAGES.format("Redirecting", config.getRedirectUrl()));
 
             // remove existing Content-Length header before continuing chain, as API response will not be returned
             response.getHeaders().remove(Constants.HEADER_CONTENT_LENGTH);
@@ -216,7 +213,7 @@ public class CookieIssuePolicy extends AbstractMappedDataPolicy<CookieIssueConfi
                         final String sessionId = context.getAttribute(ATTRIBUTE_SESSION_ID, null);
 
                         if (null == sessionId) {
-                            LOGGER.error(MESSAGES.format("CookieIssuePolicy.SessionIdNull"));
+                            LOGGER.error(MESSAGES.format("SessionIdNull"));
                         } else {
                             final String authenticatedPrincipal = parseApiResponseBody(config, readBuffer.getBytes());
                             storeSessionData(context, config, sessionId, authenticatedPrincipal);
@@ -228,11 +225,11 @@ public class CookieIssuePolicy extends AbstractMappedDataPolicy<CookieIssueConfi
                         }
 
                     } else {
-                        LOGGER.warn(MESSAGES.format("CookieIssuePolicy.ApiResponseBodyEmpty"));
+                        LOGGER.warn(MESSAGES.format("ApiResponseBodyEmpty"));
                     }
 
                 } catch (Exception e) {
-                    LOGGER.error(MESSAGES.format("CookieIssuePolicy.ErrorProcessingApiResponseBody"), e);
+                    LOGGER.error(MESSAGES.format("ErrorProcessingApiResponseBody"), e);
                 }
 
                 super.end();
@@ -267,7 +264,7 @@ public class CookieIssuePolicy extends AbstractMappedDataPolicy<CookieIssueConfi
 
         // build and store a new session
         final Session sessionData = SessionUtil.buildSession(sessionId, authenticatedPrincipal, config.getValidityPeriod());
-        LOGGER.debug(MESSAGES.format("CookieIssuePolicy.StoringSessionData", sessionId, sessionData));
+        LOGGER.debug(MESSAGES.format("StoringSessionData", sessionId, sessionData));
 
         final ISessionStore sessionStore = SessionStoreFactory.getSessionStore(context);
         sessionStore.storeSession(sessionId, sessionData, new IAsyncResultHandler<Void>() {
@@ -275,11 +272,11 @@ public class CookieIssuePolicy extends AbstractMappedDataPolicy<CookieIssueConfi
             public void handle(IAsyncResult<Void> result) {
                 if (result.isSuccess()) {
                     LOGGER.info(MESSAGES.format(
-                            "CookieIssuePolicy.StoredSessionData", sessionId, sessionData));
+                            "StoredSessionData", sessionId, sessionData));
 
                 } else {
                     LOGGER.error(MESSAGES.format(
-                            "CookieIssuePolicy.ErrorStoringSessionData", sessionId, sessionData), result.getError());
+                            "ErrorStoringSessionData", sessionId, sessionData), result.getError());
                 }
             }
         });
@@ -295,12 +292,12 @@ public class CookieIssuePolicy extends AbstractMappedDataPolicy<CookieIssueConfi
     private String parseApiResponseBody(CookieIssueConfigBean config, byte[] apiResponseBody) {
         // sanity check
         if (null == apiResponseBody || 0 == apiResponseBody.length) {
-            LOGGER.warn(MESSAGES.format("CookieIssuePolicy.ApiResponseBodyEmpty"));
+            LOGGER.warn(MESSAGES.format("ApiResponseBodyEmpty"));
 
         } else {
             final String body = new String(apiResponseBody);
             if (LOGGER.isTraceEnabled()) {
-                LOGGER.trace(MESSAGES.format("CookieIssuePolicy.ParsingApiResponseBody", body));
+                LOGGER.trace(MESSAGES.format("ParsingApiResponseBody", body));
             }
 
             try {
@@ -309,14 +306,14 @@ public class CookieIssuePolicy extends AbstractMappedDataPolicy<CookieIssueConfi
                 final String responseFieldValue = root.getString(config.getApiResponseFieldName());
 
                 if (LOGGER.isTraceEnabled()) {
-                    LOGGER.trace(MESSAGES.format("CookieIssuePolicy.ExtractedApiResponseField",
+                    LOGGER.trace(MESSAGES.format("ExtractedApiResponseField",
                             config.getApiResponseFieldName(), responseFieldValue));
                 }
 
                 return responseFieldValue;
 
             } catch (JSONException e) {
-                LOGGER.error(MESSAGES.format("CookieIssuePolicy.ErrorParsingApiResponseBody", body), e);
+                LOGGER.error(MESSAGES.format("ErrorParsingApiResponseBody", body), e);
             }
         }
 

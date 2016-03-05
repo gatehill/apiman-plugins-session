@@ -17,21 +17,21 @@ public class ConfigValidator {
         return new ConfigValidator();
     }
 
-    public ConfigValidator validate(Object nullableObj, String validationErrorMessage) {
+    public ConfigValidator validate(String validationErrorMessage, Object nullableObj) {
         if (null == nullableObj) {
             validationErrors.add(validationErrorMessage);
         }
         return this;
     }
 
-    public ConfigValidator validate(String nullableString, String validationErrorMessage) {
+    public ConfigValidator validate(String validationErrorMessage, String nullableString) {
         if (StringUtils.isBlank(nullableString)) {
             validationErrors.add(validationErrorMessage);
         }
         return this;
     }
 
-    public ConfigValidator validate(Validator validator, String validationErrorMessage) {
+    public ConfigValidator validate(String validationErrorMessage, Validator validator) {
         if (!validator.isValid()) {
             validationErrors.add(validationErrorMessage);
         }

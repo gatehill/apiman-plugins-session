@@ -55,27 +55,24 @@ public class CookieValidatePolicy extends AbstractMappedPolicy<CookieValidateCon
 
         // validate configuration
         final ConfigValidator validator = ConfigValidator.build()
-                .validate(config.getValidationType(), "Validation type")
-                .validate(new ConfigValidator.Validator() {
+                .validate("Path matcher", config.getPathMatcher())
+                .validate("Validation type", config.getValidationType())
+                .validate("Cookie name", new ConfigValidator.Validator() {
                     @Override
                     public boolean isValid() {
                         // cookie name should be set
                         return (ValidationType.NoValidation.equals(config.getValidationType()) ||
                                 StringUtils.isNotBlank(config.getCookieName()));
                     }
-                }, "Cookie name");
+                });
 
         if (!validator.isValid()) {
             throw new InvalidConfigurationException(MESSAGES.formatEach(
-                    "CookieValidatePolicy.ConfigNotSet", validator.getValidationErrors()));
+                    "ConfigNotSet", validator.getValidationErrors()));
         }
 
-        // configure path matcher
-        if (StringUtils.isNotBlank(config.getPathMatcher())) {
-            pathMatcher = Pattern.compile(config.getPathMatcher());
-        } else {
-            LOGGER.warn(MESSAGES.format("CookieValidatePolicy.PathMatcherNotSet"));
-        }
+        // precompile path matcher for performance
+        pathMatcher = Pattern.compile(config.getPathMatcher());
 
         return config;
     }
@@ -89,7 +86,7 @@ public class CookieValidatePolicy extends AbstractMappedPolicy<CookieValidateCon
 
         // skip if path matcher is not use, or request URL doesn't match
         if (null == pathMatcher || !pathMatcher.matcher(request.getDestination()).matches()) {
-            LOGGER.debug(MESSAGES.format("CookieValidatePolicy.PathMatchFalse"));
+            LOGGER.debug(MESSAGES.format("PathMatchFalse"));
 
             context.setAttribute(ATTRIBUTE_SKIP, true);
             chain.doApply(request);
@@ -100,12 +97,12 @@ public class CookieValidatePolicy extends AbstractMappedPolicy<CookieValidateCon
         final ValidationType validationType = config.getValidationType();
         if (ValidationType.NoValidation.equals(validationType)) {
             // no validation - continue request to back-end
-            LOGGER.debug(MESSAGES.format("CookieValidatePolicy.NoValidation"));
+            LOGGER.debug(MESSAGES.format("NoValidation"));
             chain.doApply(request);
 
         } else if (ValidationType.ValidationRequired.equals(validationType) || ValidationType.ValidationOptional.equals(validationType)) {
             // validate the session
-            LOGGER.debug(MESSAGES.format("CookieValidatePolicy.AttemptingValidation"));
+            LOGGER.debug(MESSAGES.format("AttemptingValidation"));
 
             final Cookie cookie = CookieUtil.getCookie(request, config.getCookieName());
             if (null != cookie && !StringUtils.isEmpty(cookie.getValue())) {
@@ -115,12 +112,12 @@ public class CookieValidatePolicy extends AbstractMappedPolicy<CookieValidateCon
             } else {
                 if (ValidationType.ValidationOptional.equals(validationType)) {
                     // permit absent cookie - continue request to back-end
-                    LOGGER.info(MESSAGES.format("CookieValidatePolicy.ValidationOptional.CookieAbsent", config.getCookieName()));
+                    LOGGER.info(MESSAGES.format("ValidationOptional.CookieAbsent", config.getCookieName()));
                     chain.doApply(request);
 
                 } else {
                     // policy failure - cookie is absent or empty
-                    LOGGER.warn(MESSAGES.format("CookieValidatePolicy.ValidationRequired.CookieAbsent", config.getCookieName()));
+                    LOGGER.warn(MESSAGES.format("ValidationRequired.CookieAbsent", config.getCookieName()));
                     chain.doFailure(new PolicyFailure(PolicyFailureType.Authentication,
                             HttpURLConnection.HTTP_UNAUTHORIZED, Constants.GENERIC_AUTH_FAILURE));
                 }
@@ -128,7 +125,7 @@ public class CookieValidatePolicy extends AbstractMappedPolicy<CookieValidateCon
 
         } else {
             chain.throwError(new UnsupportedOperationException(
-                    MESSAGES.format("CookieValidatePolicy.UnsupportedValidationType", validationType)));
+                    MESSAGES.format("UnsupportedValidationType", validationType)));
         }
     }
 
@@ -161,7 +158,7 @@ public class CookieValidatePolicy extends AbstractMappedPolicy<CookieValidateCon
                 } else {
                     if (ValidationType.ValidationOptional.equals(validationType)) {
                         // permit invalid session - continue request to back-end
-                        LOGGER.info(MESSAGES.format("CookieValidatePolicy.ValidationOptional.IgnoreInvalidSession",
+                        LOGGER.info(MESSAGES.format("ValidationOptional.IgnoreInvalidSession",
                                 validationResult.getMessage()));
 
                         chain.doApply(request);
@@ -201,12 +198,12 @@ public class CookieValidatePolicy extends AbstractMappedPolicy<CookieValidateCon
         } else {
             //noinspection ThrowableResultOfMethodCallIgnored
             if (null != result.getError()) {
-                LOGGER.error(MESSAGES.format("CookieValidatePolicy.ErrorReadingSessionData", sessionId), result.getError());
+                LOGGER.error(MESSAGES.format("ErrorReadingSessionData", sessionId), result.getError());
             }
 
             // session not present
             validationResult = new ValidationResult(false,
-                    MESSAGES.format("CookieValidatePolicy.MissingSessionData", sessionId));
+                    MESSAGES.format("MissingSessionData", sessionId));
         }
 
         return validationResult;
@@ -225,7 +222,7 @@ public class CookieValidatePolicy extends AbstractMappedPolicy<CookieValidateCon
                                                IPolicyContext context, CookieValidateConfigBean config) {
 
         if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace(MESSAGES.format("CookieValidatePolicy.ValidatingSession", sessionData));
+            LOGGER.trace(MESSAGES.format("ValidatingSession", sessionData));
         }
 
         if (sessionId.equals(sessionData.getSessionId())) {
@@ -239,26 +236,26 @@ public class CookieValidatePolicy extends AbstractMappedPolicy<CookieValidateCon
                         request.getHeaders().put(config.getAuthHeaderName(), sessionData.getAuthenticatedPrincipal());
 
                         return new ValidationResult(true,
-                                MESSAGES.format("CookieValidatePolicy.CookieValidationSucceededSessionValid", sessionId));
+                                MESSAGES.format("CookieValidationSucceededSessionValid", sessionId));
 
                     } else {
                         return new ValidationResult(false,
-                                MESSAGES.format("CookieValidatePolicy.SessionExceededAbsoluteExpiry", sessionId));
+                                MESSAGES.format("SessionExceededAbsoluteExpiry", sessionId));
                     }
 
                 } else {
                     return new ValidationResult(false,
-                            MESSAGES.format("CookieValidatePolicy.SessionExpired", sessionId));
+                            MESSAGES.format("SessionExpired", sessionId));
                 }
 
             } else {
                 return new ValidationResult(false,
-                        MESSAGES.format("CookieValidatePolicy.SessionTerminated", sessionId));
+                        MESSAGES.format("SessionTerminated", sessionId));
             }
 
         } else {
             return new ValidationResult(false,
-                    MESSAGES.format("CookieValidatePolicy.SessionIdMismatch", sessionId));
+                    MESSAGES.format("SessionIdMismatch", sessionId));
         }
     }
 
@@ -272,7 +269,7 @@ public class CookieValidatePolicy extends AbstractMappedPolicy<CookieValidateCon
         final long newExpiry = (TimeUtil.getNowInMillis() + sessionData.getValidityPeriod());
         sessionData.setExpires(newExpiry);
 
-        LOGGER.debug(MESSAGES.format("CookieValidatePolicy.ExtendingSession", sessionData.getSessionId(), newExpiry));
+        LOGGER.debug(MESSAGES.format("ExtendingSession", sessionData.getSessionId(), newExpiry));
 
         // store updated session data
         final ISessionStore sessionStore = SessionStoreFactory.getSessionStore(context);
@@ -281,9 +278,9 @@ public class CookieValidatePolicy extends AbstractMappedPolicy<CookieValidateCon
             public void handle(IAsyncResult<Void> result) {
                 if (result.isSuccess()) {
                     LOGGER.info(MESSAGES.format(
-                            "CookieValidatePolicy.UpdatedSessionData", sessionData.getSessionId(), sessionData));
+                            "UpdatedSessionData", sessionData.getSessionId(), sessionData));
                 } else {
-                    LOGGER.error(MESSAGES.format("CookieValidatePolicy.ErrorUpdatingSessionData",
+                    LOGGER.error(MESSAGES.format("ErrorUpdatingSessionData",
                             sessionData.getSessionId(), sessionData), result.getError());
                 }
             }
