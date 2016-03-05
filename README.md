@@ -59,6 +59,10 @@ If you want to run unit tests, run:
 
     mvn clean test
 
+# Recent changes
+
+For recent changes see the [Changelog](CHANGELOG.md).
+
 # Contributing
 
 Pull requests are welcome.
