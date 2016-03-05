@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
  */
 public class CookieValidatePolicy extends AbstractMappedPolicy<CookieValidateConfigBean> {
     private static final Logger LOGGER = LoggerFactory.getLogger(CookieValidatePolicy.class);
-    private static final Messages MESSAGES = new Messages("io.apiman.plugins.cookie_validate_policy.messages");
+    private static final Messages MESSAGES = Messages.getMessageBundle(CookieValidatePolicy.class);
     private static final String ATTRIBUTE_SKIP = CookieValidatePolicy.class.getCanonicalName() + ".skipPolicy";
 
     private Pattern pathMatcher;
