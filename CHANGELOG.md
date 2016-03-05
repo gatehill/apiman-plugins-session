@@ -7,7 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - ...
 
-## [1.1.3] - 2016-01-11
+## [1.1.3] - 2016-03-05
 ### Added
 - Project version is now independent of apiman core version.
 - Changelog (this file!)
