@@ -63,6 +63,7 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
                 .validate(config.getInvalidateSession(), "Invalidate session setting")
                 .validate(config.getCookieName(), "Cookie name")
                 .validate(config.getSkipBackendCall(), "Skip backend call setting")
+                .validate(config.getForceCookieRemoval(), "Force cookie removal setting")
                 .validate(config.getResponseBehaviour(), "Response behaviour")
                 .validate(new ConfigValidator.Validator() {
                     @Override
@@ -104,24 +105,30 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
             return;
         }
 
-        final Cookie cookie = CookieUtil.getCookie(request, config.getCookieName());
+        Cookie cookie = CookieUtil.getCookie(request, config.getCookieName());
+        
+        // cookie is absent - force removal anyway?
+        if (null == cookie && config.getForceCookieRemoval()) {
+            LOGGER.warn(MESSAGES.format("CookieRemovePolicy.CookieAbsentForceRemoval", config.getCookieName()));
+            cookie = new Cookie(config.getCookieName(), "");
+        }
+        
         if (null == cookie) {
             // cookie is absent - continue
-            LOGGER.warn(MESSAGES.format("CookieRemovePolicy.CookieAbsent", config.getCookieName()));
-            success(request, context, config, chain);
+            LOGGER.warn(MESSAGES.format("CookieRemovePolicy.CookieAbsentSkipRemoval", config.getCookieName()));
+            doContinue(request, context, config, chain);
 
         } else {
-            final String sessionId = cookie.getValue();
+            // mark cookie for removal
+            context.setAttribute(ATTRIBUTE_REMOVE_COOKIE, cookie);
 
+            final String sessionId = cookie.getValue();
             if (StringUtils.isEmpty(sessionId)) {
                 // cookie is empty - continue
                 LOGGER.warn(MESSAGES.format("CookieRemovePolicy.CookieEmpty", config.getCookieName()));
-                success(request, context, config, chain);
+                doContinue(request, context, config, chain);
 
             } else {
-                // cookie is present - mark for removal
-                context.setAttribute(ATTRIBUTE_REMOVE_COOKIE, cookie);
-
                 if (config.getInvalidateSession()) {
                     LOGGER.debug(MESSAGES.format("CookieRemovePolicy.AttemptingInvalidation", sessionId));
                     invalidateSession(sessionId, request, context, chain, config);
@@ -130,7 +137,7 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
                     LOGGER.debug(MESSAGES.format("CookieRemovePolicy.InvalidationDisabled", sessionId));
 
                     // continue
-                    success(request, context, config, chain);
+                    doContinue(request, context, config, chain);
                 }
             }
         }
@@ -223,8 +230,8 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
      * @param config  the policy configuration
      * @param chain   the policy chain
      */
-    private void success(ApiRequest request, IPolicyContext context, CookieRemoveConfigBean config,
-                         IPolicyChain<ApiRequest> chain) {
+    private void doContinue(ApiRequest request, IPolicyContext context, CookieRemoveConfigBean config,
+                            IPolicyChain<ApiRequest> chain) {
 
         if (config.getSkipBackendCall()) {
             // don't call the back-end service
@@ -274,7 +281,7 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
                 if (result.isSuccess()) {
                     // session data removed
                     LOGGER.info(MESSAGES.format("CookieRemovePolicy.SessionInvalidated", sessionId));
-                    success(request, context, config, chain);
+                    doContinue(request, context, config, chain);
 
                 } else {
                     // failed to remove session data

@@ -2,9 +2,8 @@
   "cookieName": "XSESSION",
   "cookiePath": "/",
   "invalidateSession": true,
-  "responseBehaviour": "Redirect",
-  "redirectUrl": "/another/url",
-  "skipBackendCall": true,
+  "responseBehaviour": "PassThrough",
+  "skipBackendCall": false,
   "forceCookieRemoval": true,
   "pathMatcher": ".*"
 }

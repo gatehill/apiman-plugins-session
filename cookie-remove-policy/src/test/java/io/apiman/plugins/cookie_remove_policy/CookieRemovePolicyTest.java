@@ -108,6 +108,42 @@ public class CookieRemovePolicyTest extends ApimanPolicyTest {
     }
 
     /**
+     * Sends a request that does not contain a session Cookie with a valid session ID.
+     *
+     * @param expectSetCookieHeader whether the response contains a 'Set-Cookie' header to force removal of the cookie.
+     * @throws Throwable
+     */
+    private void callWithoutCookie(boolean expectSetCookieHeader) throws Throwable {
+        // test data - session expires in 60s
+        final Session originalSession = CommonTestUtil.insertTestSession(60, false);
+
+        // send request without cookie
+        final PolicyTestRequest request = PolicyTestRequest.build(PolicyTestRequestType.GET, RESOURCE);
+        request.header(Constants.HEADER_COOKIE, "");
+
+        final PolicyTestResponse response = send(request);
+        assertEquals(HttpURLConnection.HTTP_OK, response.code());
+
+        // content should be returned
+        assertNotNull(response.header(Constants.HEADER_CONTENT_LENGTH));
+        assertTrue(StringUtils.isNotBlank(response.body()));
+
+        if (expectSetCookieHeader) {
+            // verify the cookie was set to be removed
+            assertNotNull(response.header(Constants.HEADER_SET_COOKIE));
+
+        } else {
+            // verify the cookie was not set to be removed
+            assertNull(response.header(Constants.HEADER_SET_COOKIE));
+        }
+
+        // verify the session data in the shared state was not removed
+        final Session updatedSession = CommonTestUtil.fetchSession(originalSession.getSessionId());
+        assertEquals(originalSession.getSessionId(), updatedSession.getSessionId());
+        assertFalse(updatedSession.isTerminated());
+    }
+
+    /**
      * Expects the Session identified by the value of the cookie is removed, and that the HTTP response
      * instructs the browser to remove the cookie.
      *
@@ -166,7 +202,8 @@ public class CookieRemovePolicyTest extends ApimanPolicyTest {
     }
 
     /**
-     * Expects the Session is unchanged as the request does not contain a Cookie with a valid session ID.
+     * Expects the Session is unchanged as the request does not contain a Cookie with a valid session ID. The response
+     * should not contain a 'Set-Cookie' header.
      *
      * @throws Throwable
      */
@@ -174,27 +211,20 @@ public class CookieRemovePolicyTest extends ApimanPolicyTest {
     @Configuration(classpathConfigFile = "passthrough-config.json")
     @BackEndApi(EchoBackEndApi.class)
     public void testLogoutIgnoreMissingCookie() throws Throwable {
-        // test data - session expires in 60s
-        final Session originalSession = CommonTestUtil.insertTestSession(60, false);
+        callWithoutCookie(false);
+    }
 
-        // send request without cookie
-        final PolicyTestRequest request = PolicyTestRequest.build(PolicyTestRequestType.GET, RESOURCE);
-        request.header(Constants.HEADER_COOKIE, "");
-
-        final PolicyTestResponse response = send(request);
-        assertEquals(HttpURLConnection.HTTP_OK, response.code());
-
-        // content should be returned
-        assertNotNull(response.header(Constants.HEADER_CONTENT_LENGTH));
-        assertTrue(StringUtils.isNotBlank(response.body()));
-
-        // verify the cookie was not set to be removed
-        assertNull(response.header(Constants.HEADER_SET_COOKIE));
-
-        // verify the session data in the shared state was not removed
-        final Session updatedSession = CommonTestUtil.fetchSession(originalSession.getSessionId());
-        assertEquals(originalSession.getSessionId(), updatedSession.getSessionId());
-        assertFalse(updatedSession.isTerminated());
+    /**
+     * Expects the Session is unchanged as the request does not contain a Cookie with a valid session ID. The response
+     * should contain a 'Set-Cookie' header to force removal of the cookie.
+     *
+     * @throws Throwable
+     */
+    @Test
+    @Configuration(classpathConfigFile = "force-remove-config.json")
+    @BackEndApi(EchoBackEndApi.class)
+    public void testLogoutForceRemoveMissingCookie() throws Throwable {
+        callWithoutCookie(true);
     }
 
     /**

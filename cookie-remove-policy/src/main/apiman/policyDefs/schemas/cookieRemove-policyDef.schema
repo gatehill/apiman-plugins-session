@@ -13,6 +13,11 @@
       "description": "The path of the cookie to remove",
       "type": "string"
     },
+    "forceCookieRemoval": {
+      "title": "Force Cookie Removal",
+      "description": "Whether to force cookie removal even if not sent by browser",
+      "type": "boolean"
+    },
     "invalidateSession": {
       "title": "Invalidate Session",
       "description": "Whether to invalidate the session",
