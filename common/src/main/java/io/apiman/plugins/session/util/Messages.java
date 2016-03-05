@@ -24,10 +24,20 @@ import java.util.ResourceBundle;
  * @author Pete Cornish {@literal <outofcoffee@gmail.com>}
  */
 public class Messages {
+    private static final String DEFAULT_BUNDLE_NAME = "messages";
+
     private ResourceBundle resourceBundle;
 
     public Messages(String bundleName) {
         resourceBundle = ResourceBundle.getBundle(bundleName);
+    }
+
+    public Messages(Class<?> clazz) {
+        this(clazz.getPackage().getName() + "." + DEFAULT_BUNDLE_NAME);
+    }
+
+    public static Messages getMessageBundle(Class<?> clazz) {
+        return new Messages(clazz);
     }
 
     /**
