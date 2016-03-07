@@ -1,11 +1,12 @@
 package io.apiman.plugins.cookie_issue_policy;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.apiman.gateway.engine.async.IAsyncResult;
 import io.apiman.gateway.engine.async.IAsyncResultHandler;
-import io.apiman.gateway.engine.beans.PolicyFailure;
-import io.apiman.gateway.engine.beans.PolicyFailureType;
 import io.apiman.gateway.engine.beans.ApiRequest;
 import io.apiman.gateway.engine.beans.ApiResponse;
+import io.apiman.gateway.engine.beans.PolicyFailure;
+import io.apiman.gateway.engine.beans.PolicyFailureType;
 import io.apiman.gateway.engine.beans.exceptions.ConfigurationParseException;
 import io.apiman.gateway.engine.components.IBufferFactoryComponent;
 import io.apiman.gateway.engine.io.AbstractStream;
@@ -24,12 +25,13 @@ import io.apiman.plugins.session.store.ISessionStore;
 import io.apiman.plugins.session.store.SessionStoreFactory;
 import io.apiman.plugins.session.util.*;
 import org.apache.commons.lang.StringUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -41,8 +43,10 @@ import java.util.regex.Pattern;
 public class CookieIssuePolicy extends AbstractMappedDataPolicy<CookieIssueConfigBean> {
     private static final Logger LOGGER = LoggerFactory.getLogger(CookieIssuePolicy.class);
     private static final Messages MESSAGES = Messages.getMessageBundle(CookieIssuePolicy.class);
+    private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final String ATTRIBUTE_SESSION_ID = CookieIssuePolicy.class.getCanonicalName() + ".sessionId";
     private static final String ATTRIBUTE_SKIP = CookieIssuePolicy.class.getCanonicalName() + ".skipPolicy";
+
     private Pattern pathMatcher;
 
     /**
@@ -160,7 +164,7 @@ public class CookieIssuePolicy extends AbstractMappedDataPolicy<CookieIssueConfi
      */
     @Override
     protected IReadWriteStream<ApiRequest> requestDataHandler(ApiRequest request, IPolicyContext context,
-                                                                  CookieIssueConfigBean config) {
+                                                              CookieIssueConfigBean config) {
         return null;
     }
 
@@ -169,7 +173,7 @@ public class CookieIssuePolicy extends AbstractMappedDataPolicy<CookieIssueConfi
      */
     @Override
     protected IReadWriteStream<ApiResponse> responseDataHandler(final ApiResponse response, final IPolicyContext context,
-                                                                    final CookieIssueConfigBean config) {
+                                                                final CookieIssueConfigBean config) {
 
         // short-circuit
         if (context.getAttribute(ATTRIBUTE_SKIP, false)) {
@@ -302,8 +306,9 @@ public class CookieIssuePolicy extends AbstractMappedDataPolicy<CookieIssueConfi
 
             try {
                 // extract response field
-                final JSONObject root = new JSONObject(body);
-                final String responseFieldValue = root.getString(config.getApiResponseFieldName());
+                @SuppressWarnings("unchecked")
+                final Map<String, Object> bodyJson = MAPPER.readValue(body, HashMap.class);
+                final String responseFieldValue = (String) bodyJson.get(config.getApiResponseFieldName());
 
                 if (LOGGER.isTraceEnabled()) {
                     LOGGER.trace(MESSAGES.format("ExtractedApiResponseField",
@@ -312,7 +317,7 @@ public class CookieIssuePolicy extends AbstractMappedDataPolicy<CookieIssueConfi
 
                 return responseFieldValue;
 
-            } catch (JSONException e) {
+            } catch (IOException e) {
                 LOGGER.error(MESSAGES.format("ErrorParsingApiResponseBody", body), e);
             }
         }

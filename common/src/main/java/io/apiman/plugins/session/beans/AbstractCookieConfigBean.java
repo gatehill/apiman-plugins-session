@@ -1,6 +1,6 @@
 package io.apiman.plugins.session.beans;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Common configuration object for the cookie policies.

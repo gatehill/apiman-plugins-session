@@ -6,10 +6,10 @@ import io.apiman.gateway.engine.IApiConnector;
 import io.apiman.gateway.engine.async.AsyncResultImpl;
 import io.apiman.gateway.engine.async.IAsyncHandler;
 import io.apiman.gateway.engine.async.IAsyncResultHandler;
-import io.apiman.gateway.engine.beans.HeaderHashMap;
 import io.apiman.gateway.engine.beans.ApiRequest;
 import io.apiman.gateway.engine.beans.ApiResponse;
 import io.apiman.gateway.engine.beans.exceptions.ConnectorException;
+import io.apiman.gateway.engine.beans.util.HeaderMap;
 import io.apiman.gateway.engine.io.IApimanBuffer;
 import io.apiman.gateway.engine.policy.IConnectorInterceptor;
 
@@ -17,7 +17,7 @@ import java.net.HttpURLConnection;
 
 /**
  * A connector interceptor that short-circuits chain processing to skip invocation of the back-end service.
- *
+ * <p>
  * This is required because calling {@link io.apiman.gateway.engine.policy.Chain#doSkip(Object)} still seems
  * to invoke the back-end service.
  *
@@ -50,7 +50,7 @@ class ShortcircuitConnectorInterceptor implements IConnectorInterceptor {
 
             response = new ApiResponse();
             response.setCode(HttpURLConnection.HTTP_OK);
-            response.setHeaders(new HeaderHashMap());
+            response.setHeaders(new HeaderMap());
         }
 
         @Override

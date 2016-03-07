@@ -1,8 +1,8 @@
 package io.apiman.plugins.cookie_validate_policy.beans;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.apiman.plugins.session.beans.AbstractSessionConfigBean;
 import io.apiman.plugins.session.beans.ValidationType;
-import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * Configuration object for the Cookie Validator policy.

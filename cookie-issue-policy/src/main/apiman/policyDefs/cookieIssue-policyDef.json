@@ -1,9 +1,9 @@
 {
-  "id" : "cookie-issue-policy",
-  "name" : "Cookie Issuer Policy",
-  "description" : "Issues a session cookie.",
-  "policyImpl" : "plugin:${project.groupId}:${project.artifactId}:${project.version}:${project.packaging}/io.apiman.plugins.cookie_issue_policy.CookieIssuePolicy",
-  "icon" : "arrow-circle-right",
-  "formType" : "JsonSchema",
-  "form" : "schemas/cookieIssue-policyDef.schema"
+  "id": "cookie-issue-policy",
+  "name": "Cookie Issuer Policy",
+  "description": "Issues a session cookie.",
+  "policyImpl": "plugin:${project.groupId}:${project.artifactId}:${project.version}:${project.packaging}/io.apiman.plugins.cookie_issue_policy.CookieIssuePolicy",
+  "icon": "arrow-circle-right",
+  "formType": "JsonSchema",
+  "form": "schemas/cookieIssue-policyDef.schema"
 }

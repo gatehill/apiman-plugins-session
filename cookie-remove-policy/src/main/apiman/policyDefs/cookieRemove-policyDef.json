@@ -1,9 +1,9 @@
 {
-  "id" : "cookie-remove-policy",
-  "name" : "Cookie Remover Policy",
-  "description" : "Removes a cookie.",
-  "policyImpl" : "plugin:${project.groupId}:${project.artifactId}:${project.version}:${project.packaging}/io.apiman.plugins.cookie_remove_policy.CookieRemovePolicy",
-  "icon" : "times-circle",
-  "formType" : "JsonSchema",
-  "form" : "schemas/cookieRemove-policyDef.schema"
+  "id": "cookie-remove-policy",
+  "name": "Cookie Remover Policy",
+  "description": "Removes a cookie.",
+  "policyImpl": "plugin:${project.groupId}:${project.artifactId}:${project.version}:${project.packaging}/io.apiman.plugins.cookie_remove_policy.CookieRemovePolicy",
+  "icon": "times-circle",
+  "formType": "JsonSchema",
+  "form": "schemas/cookieRemove-policyDef.schema"
 }

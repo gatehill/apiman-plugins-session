@@ -2,10 +2,10 @@ package io.apiman.plugins.cookie_remove_policy;
 
 import io.apiman.gateway.engine.async.IAsyncResult;
 import io.apiman.gateway.engine.async.IAsyncResultHandler;
-import io.apiman.gateway.engine.beans.PolicyFailure;
-import io.apiman.gateway.engine.beans.PolicyFailureType;
 import io.apiman.gateway.engine.beans.ApiRequest;
 import io.apiman.gateway.engine.beans.ApiResponse;
+import io.apiman.gateway.engine.beans.PolicyFailure;
+import io.apiman.gateway.engine.beans.PolicyFailureType;
 import io.apiman.gateway.engine.beans.exceptions.ConfigurationParseException;
 import io.apiman.gateway.engine.io.AbstractStream;
 import io.apiman.gateway.engine.io.IApimanBuffer;
@@ -103,13 +103,13 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
         }
 
         Cookie cookie = CookieUtil.getCookie(request, config.getCookieName());
-        
+
         // cookie is absent - force removal anyway?
         if (null == cookie && config.getForceCookieRemoval()) {
             LOGGER.warn(MESSAGES.format("CookieAbsentForceRemoval", config.getCookieName()));
             cookie = new Cookie(config.getCookieName(), "");
         }
-        
+
         if (null == cookie) {
             // cookie is absent - continue
             LOGGER.warn(MESSAGES.format("CookieAbsentSkipRemoval", config.getCookieName()));
@@ -179,7 +179,7 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
      */
     @Override
     protected IReadWriteStream<ApiRequest> requestDataHandler(ApiRequest request, IPolicyContext context,
-                                                                  CookieRemoveConfigBean config) {
+                                                              CookieRemoveConfigBean config) {
         return null;
     }
 
@@ -188,8 +188,8 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
      */
     @Override
     protected IReadWriteStream<ApiResponse> responseDataHandler(final ApiResponse response,
-                                                                    final IPolicyContext context,
-                                                                    final CookieRemoveConfigBean config) {
+                                                                final IPolicyContext context,
+                                                                final CookieRemoveConfigBean config) {
         // short-circuit
         if (context.getAttribute(ATTRIBUTE_SKIP, false)) {
             return null;
