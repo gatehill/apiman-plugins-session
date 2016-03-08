@@ -7,6 +7,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - ...
 
+## [1.1.4] - 2016-03-07
+### Added
+- Bumps apiman base version to 1.2.2.Final.
+- Makes path matcher mandatory.
+
 ## [1.1.3] - 2016-03-05
 ### Added
 - Project version is now independent of apiman core version.

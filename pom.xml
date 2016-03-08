@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>apiman-plugins-session</artifactId>
-    <version>1.1.4-SNAPSHOT</version>
+    <version>1.1.4</version>
     <name>apiman-plugins-session</name>
     <packaging>pom</packaging>
 
@@ -39,7 +39,7 @@
     </developers>
 
     <properties>
-        <version.session.plugins>1.1.4-SNAPSHOT</version.session.plugins>
+        <version.session.plugins>1.1.4</version.session.plugins>
         <version.org.slf4j>1.7.2</version.org.slf4j>
     </properties>
 
