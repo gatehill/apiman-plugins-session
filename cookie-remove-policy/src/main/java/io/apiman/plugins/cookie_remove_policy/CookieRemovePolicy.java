@@ -38,9 +38,10 @@ import java.util.regex.Pattern;
  */
 public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveConfigBean> {
     private static final Logger LOGGER = LoggerFactory.getLogger(CookieRemovePolicy.class);
+    private static final Messages MESSAGES = new Messages("io.apiman.plugins.cookie_remove_policy", "CookieRemovePolicy");
     private static final String ATTRIBUTE_REMOVE_COOKIE = CookieRemovePolicy.class.getCanonicalName() + ".removeCookie";
     private static final String ATTRIBUTE_SKIP = CookieRemovePolicy.class.getCanonicalName() + ".skipPolicy";
-    private static final Messages MESSAGES = Messages.getMessageBundle(CookieRemovePolicy.class);
+
     private Pattern pathMatcher;
 
     /**

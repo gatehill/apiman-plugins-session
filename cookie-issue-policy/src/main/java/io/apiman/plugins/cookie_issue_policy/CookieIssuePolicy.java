@@ -42,7 +42,7 @@ import java.util.regex.Pattern;
  */
 public class CookieIssuePolicy extends AbstractMappedDataPolicy<CookieIssueConfigBean> {
     private static final Logger LOGGER = LoggerFactory.getLogger(CookieIssuePolicy.class);
-    private static final Messages MESSAGES = Messages.getMessageBundle(CookieIssuePolicy.class);
+    private static final Messages MESSAGES = new Messages("io.apiman.plugins.cookie_issue_policy", "CookieIssuePolicy");
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final String ATTRIBUTE_SESSION_ID = CookieIssuePolicy.class.getCanonicalName() + ".sessionId";
     private static final String ATTRIBUTE_SKIP = CookieIssuePolicy.class.getCanonicalName() + ".skipPolicy";
