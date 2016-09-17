@@ -57,13 +57,10 @@ public class CookieValidatePolicy extends AbstractMappedPolicy<CookieValidateCon
         final ConfigValidator validator = ConfigValidator.build()
                 .validate("Path matcher", config.getPathMatcher())
                 .validate("Validation type", config.getValidationType())
-                .validate("Cookie name", new ConfigValidator.Validator() {
-                    @Override
-                    public boolean isValid() {
-                        // cookie name should be set
-                        return (ValidationType.NoValidation.equals(config.getValidationType()) ||
-                                StringUtils.isNotBlank(config.getCookieName()));
-                    }
+                .validate("Cookie name", () -> {
+                    // cookie name should be set
+                    return (ValidationType.NoValidation.equals(config.getValidationType()) ||
+                            StringUtils.isNotBlank(config.getCookieName()));
                 });
 
         if (!validator.isValid()) {
@@ -139,38 +136,35 @@ public class CookieValidatePolicy extends AbstractMappedPolicy<CookieValidateCon
      * @param sessionId      the session ID
      * @param validationType the type of validation required
      */
-    protected void validateSession(final ApiRequest request, final IPolicyContext context,
-                                   final CookieValidateConfigBean config, final IPolicyChain<ApiRequest> chain,
-                                   final String sessionId, final ValidationType validationType) {
+    private void validateSession(final ApiRequest request, final IPolicyContext context,
+                                 final CookieValidateConfigBean config, final IPolicyChain<ApiRequest> chain,
+                                 final String sessionId, final ValidationType validationType) {
 
         // look up the session by its ID
         final ISessionStore sessionStore = SessionStoreFactory.getSessionStore(context);
-        sessionStore.fetchSession(sessionId, new IAsyncResultHandler<Session>() {
-            @Override
-            public void handle(IAsyncResult<Session> result) {
-                final ValidationResult validationResult = verifyResult(result, sessionId, request, context, config);
+        sessionStore.fetchSession(sessionId, result -> {
+            final ValidationResult validationResult = verifyResult(result, sessionId, request, context, config);
 
-                if (validationResult.isSuccess()) {
-                    // valid session - continue request to back-end
-                    LOGGER.info(validationResult.getMessage());
+            if (validationResult.isSuccess()) {
+                // valid session - continue request to back-end
+                LOGGER.info(validationResult.getMessage());
+                chain.doApply(request);
+
+            } else {
+                if (ValidationType.ValidationOptional.equals(validationType)) {
+                    // permit invalid session - continue request to back-end
+                    LOGGER.info(MESSAGES.format("ValidationOptional.IgnoreInvalidSession",
+                            validationResult.getMessage()));
+
                     chain.doApply(request);
 
                 } else {
-                    if (ValidationType.ValidationOptional.equals(validationType)) {
-                        // permit invalid session - continue request to back-end
-                        LOGGER.info(MESSAGES.format("ValidationOptional.IgnoreInvalidSession",
-                                validationResult.getMessage()));
+                    // 401 as session invalid or not found
+                    LOGGER.warn(validationResult.getMessage());
 
-                        chain.doApply(request);
-
-                    } else {
-                        // 401 as session invalid or not found
-                        LOGGER.warn(validationResult.getMessage());
-
-                        // return a generic error message - don't tell the client why the failure occurred
-                        chain.doFailure(new PolicyFailure(PolicyFailureType.Authentication,
-                                HttpURLConnection.HTTP_UNAUTHORIZED, Constants.GENERIC_AUTH_FAILURE));
-                    }
+                    // return a generic error message - don't tell the client why the failure occurred
+                    chain.doFailure(new PolicyFailure(PolicyFailureType.Authentication,
+                            HttpURLConnection.HTTP_UNAUTHORIZED, Constants.GENERIC_AUTH_FAILURE));
                 }
             }
         });
@@ -226,7 +220,7 @@ public class CookieValidatePolicy extends AbstractMappedPolicy<CookieValidateCon
         }
 
         if (sessionId.equals(sessionData.getSessionId())) {
-            if (!sessionData.isTerminated()) {
+            if (sessionData.isCurrent()) {
                 if (TimeUtil.isAfterNow(sessionData.getExpires())) {
                     if (TimeUtil.isAfterNow(sessionData.getAbsoluteExpiry())) {
                         // session is valid - update session data
@@ -273,16 +267,13 @@ public class CookieValidatePolicy extends AbstractMappedPolicy<CookieValidateCon
 
         // store updated session data
         final ISessionStore sessionStore = SessionStoreFactory.getSessionStore(context);
-        sessionStore.storeSession(sessionData.getSessionId(), sessionData, new IAsyncResultHandler<Void>() {
-            @Override
-            public void handle(IAsyncResult<Void> result) {
-                if (result.isSuccess()) {
-                    LOGGER.info(MESSAGES.format(
-                            "UpdatedSessionData", sessionData.getSessionId(), sessionData));
-                } else {
-                    LOGGER.error(MESSAGES.format("ErrorUpdatingSessionData",
-                            sessionData.getSessionId(), sessionData), result.getError());
-                }
+        sessionStore.storeSession(sessionData.getSessionId(), sessionData, result -> {
+            if (result.isSuccess()) {
+                LOGGER.info(MESSAGES.format(
+                        "UpdatedSessionData", sessionData.getSessionId(), sessionData));
+            } else {
+                LOGGER.error(MESSAGES.format("ErrorUpdatingSessionData",
+                        sessionData.getSessionId(), sessionData), result.getError());
             }
         });
     }

@@ -28,11 +28,6 @@
       "description": "The response code from the API that indicates successful authentication",
       "type": "integer"
     },
-    "apiResponseFieldName": {
-      "title": "API Response Field Name",
-      "description": "The JSON property in the API response that holds the authenticated ID",
-      "type": "string"
-    },
     "validityPeriod": {
       "title": "Session Validity Period",
       "description": "The session validity period in seconds",
@@ -46,6 +41,31 @@
         "PassThrough",
         "Redirect"
       ]
+    },
+    "jwtFieldName": {
+      "title": "API Response JWT Field Name",
+      "description": "The field name in the API response that holds the JWT",
+      "type": "string"
+    },
+    "extractClaim": {
+      "title": "Extract Claim",
+      "description": "Extract a Claim in the JWT that holds the authenticated ID (blank means use entire JWT)",
+      "type": "string"
+    },
+    "signingSecret": {
+      "title": "Signing Secret",
+      "description": "The secret used to sign the JWT",
+      "type": "string"
+    },
+    "requiredAudience": {
+      "title": "Required Audience",
+      "description": "Verify that the JWT matches this Audience (blank means skip verification)",
+      "type": "string"
+    },
+    "requiredIssuer": {
+      "title": "Required Issuer",
+      "description": "Verify that the JWT matches this Issuer (blank means skip verification)",
+      "type": "string"
     },
     "redirectUrl": {
       "title": "Redirect URL",

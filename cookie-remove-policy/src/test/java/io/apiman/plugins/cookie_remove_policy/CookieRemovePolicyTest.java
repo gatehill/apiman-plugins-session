@@ -35,7 +35,7 @@ public class CookieRemovePolicyTest extends ApimanPolicyTest {
      */
     private void callAndExpect200(boolean expectBody) throws Throwable {
         // test data - session expires in 60s
-        final Session originalSession = CommonTestUtil.insertTestSession(60, false);
+        final Session originalSession = CommonTestUtil.insertTestSession(60, true);
 
         // send request with cookie
         final PolicyTestRequest request = PolicyTestRequest.build(PolicyTestRequestType.GET, RESOURCE);
@@ -67,7 +67,7 @@ public class CookieRemovePolicyTest extends ApimanPolicyTest {
      */
     private void callAndExpect302Redirect() throws Throwable {
         // test data - session expires in 60s
-        final Session originalSession = CommonTestUtil.insertTestSession(60, false);
+        final Session originalSession = CommonTestUtil.insertTestSession(60, true);
 
         // send request with cookie
         final PolicyTestRequest request = PolicyTestRequest.build(PolicyTestRequestType.GET, RESOURCE);
@@ -115,7 +115,7 @@ public class CookieRemovePolicyTest extends ApimanPolicyTest {
      */
     private void callWithoutCookie(boolean expectSetCookieHeader) throws Throwable {
         // test data - session expires in 60s
-        final Session originalSession = CommonTestUtil.insertTestSession(60, false);
+        final Session originalSession = CommonTestUtil.insertTestSession(60, true);
 
         // send request without cookie
         final PolicyTestRequest request = PolicyTestRequest.build(PolicyTestRequestType.GET, RESOURCE);
@@ -140,7 +140,7 @@ public class CookieRemovePolicyTest extends ApimanPolicyTest {
         // verify the session data in the shared state was not removed
         final Session updatedSession = CommonTestUtil.fetchSession(originalSession.getSessionId());
         assertEquals(originalSession.getSessionId(), updatedSession.getSessionId());
-        assertFalse(updatedSession.isTerminated());
+        assertTrue(updatedSession.isCurrent());
     }
 
     /**
@@ -236,7 +236,7 @@ public class CookieRemovePolicyTest extends ApimanPolicyTest {
     @BackEndApi(EchoBackEndApi.class)
     public void testLogoutExceptionEmptyConfig() throws Throwable {
         // test data - session expires in 60s
-        final Session originalSession = CommonTestUtil.insertTestSession(60, false);
+        final Session originalSession = CommonTestUtil.insertTestSession(60, true);
 
         // send request with cookie
         final PolicyTestRequest request = PolicyTestRequest.build(PolicyTestRequestType.GET, RESOURCE);

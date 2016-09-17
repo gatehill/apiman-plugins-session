@@ -12,7 +12,12 @@ public class Session implements Serializable {
     private String authenticatedPrincipal;
     private long starts;
     private long expires;
-    private boolean terminated;
+
+    /**
+     * Since this is initialised to {@code false}, it should only be {@code true} if the session can be found in
+     * the store with a given ID.
+     */
+    private boolean current;
     private long validityPeriod;
     private long absoluteExpiry;
 
@@ -22,7 +27,7 @@ public class Session implements Serializable {
                 ", authenticatedPrincipal='" + authenticatedPrincipal + '\'' +
                 ", starts=" + starts +
                 ", expires=" + expires +
-                ", terminated=" + terminated +
+                ", current=" + current +
                 ", validityPeriod=" + validityPeriod +
                 ", absoluteExpiry=" + absoluteExpiry +
                 '}';
@@ -60,12 +65,12 @@ public class Session implements Serializable {
         this.expires = expires;
     }
 
-    public boolean isTerminated() {
-        return terminated;
+    public boolean isCurrent() {
+        return current;
     }
 
-    public void setTerminated(boolean terminated) {
-        this.terminated = terminated;
+    public void setCurrent(boolean current) {
+        this.current = current;
     }
 
     public void setValidityPeriod(long validityPeriod) {

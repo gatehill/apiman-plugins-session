@@ -1,8 +1,7 @@
 package io.apiman.plugins.cookie_issue_policy;
 
+import com.auth0.jwt.JWTVerifier;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.apiman.gateway.engine.async.IAsyncResult;
-import io.apiman.gateway.engine.async.IAsyncResultHandler;
 import io.apiman.gateway.engine.beans.ApiRequest;
 import io.apiman.gateway.engine.beans.ApiResponse;
 import io.apiman.gateway.engine.beans.PolicyFailure;
@@ -68,17 +67,15 @@ public class CookieIssuePolicy extends AbstractMappedDataPolicy<CookieIssueConfi
         final ConfigValidator validator = ConfigValidator.build()
                 .validate("API response code", config.getApiResponseCode())
                 .validate("Cookie name", config.getCookieName())
-                .validate("API response field name", config.getApiResponseFieldName())
                 .validate("Session validity period", config.getValidityPeriod())
                 .validate("Response behaviour", config.getResponseBehaviour())
                 .validate("Path matcher", config.getPathMatcher())
-                .validate("Redirect URL", new ConfigValidator.Validator() {
-                    @Override
-                    public boolean isValid() {
-                        // redirect URL should be set
-                        return (ResponseBehaviour.PassThrough.equals(config.getResponseBehaviour()) ||
-                                StringUtils.isNotBlank(config.getRedirectUrl()));
-                    }
+                .validate("API response JWT field name", config.getJwtFieldName())
+                .validate("JWT signing secret", config.getSigningSecret())
+                .validate("Redirect URL", () -> {
+                    // redirect URL should be set
+                    return (ResponseBehaviour.PassThrough.equals(config.getResponseBehaviour()) ||
+                            StringUtils.isNotBlank(config.getRedirectUrl()));
                 });
 
         if (!validator.isValid()) {
@@ -212,28 +209,42 @@ public class CookieIssuePolicy extends AbstractMappedDataPolicy<CookieIssueConfi
              */
             @Override
             public void end() {
-                try {
-                    if (readBuffer.length() > 0) {
-                        final String sessionId = context.getAttribute(ATTRIBUTE_SESSION_ID, null);
 
-                        if (null == sessionId) {
-                            LOGGER.error(MESSAGES.format("SessionIdNull"));
-                        } else {
-                            final String authenticatedPrincipal = parseApiResponseBody(config, readBuffer.getBytes());
-                            storeSessionData(context, config, sessionId, authenticatedPrincipal);
+                final String sessionId = context.getAttribute(ATTRIBUTE_SESSION_ID, null);
+
+                if (StringUtils.isBlank(sessionId)) {
+                    LOGGER.error(MESSAGES.format("SessionIdNull"));
+
+                } else {
+                    try {
+                        // fail-safe
+                        boolean sessionValid = false;
+                        try {
+                            if (readBuffer.length() > 0) {
+                                final String authenticatedPrincipal = parseApiResponseBody(config, readBuffer.getBytes());
+                                if (StringUtils.isNotBlank(authenticatedPrincipal)) {
+                                    storeSessionData(context, config, sessionId, authenticatedPrincipal);
+                                    sessionValid = true;
+                                }
+
+                                if (ResponseBehaviour.PassThrough.equals(config.getResponseBehaviour())) {
+                                    // API response will be returned unchanged
+                                    super.write(readBuffer);
+                                }
+
+                            } else {
+                                LOGGER.warn(MESSAGES.format("ApiResponseBodyEmpty"));
+                            }
+
+                        } finally {
+                            if (!sessionValid) {
+                                invalidateSession(sessionId, context);
+                            }
                         }
 
-                        if (ResponseBehaviour.PassThrough.equals(config.getResponseBehaviour())) {
-                            // API response will be returned unchanged
-                            super.write(readBuffer);
-                        }
-
-                    } else {
-                        LOGGER.warn(MESSAGES.format("ApiResponseBodyEmpty"));
+                    } catch (Exception e) {
+                        LOGGER.error(MESSAGES.format("ErrorProcessingApiResponseBody"), e);
                     }
-
-                } catch (Exception e) {
-                    LOGGER.error(MESSAGES.format("ErrorProcessingApiResponseBody"), e);
                 }
 
                 super.end();
@@ -271,17 +282,35 @@ public class CookieIssuePolicy extends AbstractMappedDataPolicy<CookieIssueConfi
         LOGGER.debug(MESSAGES.format("StoringSessionData", sessionId, sessionData));
 
         final ISessionStore sessionStore = SessionStoreFactory.getSessionStore(context);
-        sessionStore.storeSession(sessionId, sessionData, new IAsyncResultHandler<Void>() {
-            @Override
-            public void handle(IAsyncResult<Void> result) {
-                if (result.isSuccess()) {
-                    LOGGER.info(MESSAGES.format(
-                            "StoredSessionData", sessionId, sessionData));
+        sessionStore.storeSession(sessionId, sessionData, result -> {
+            if (result.isSuccess()) {
+                LOGGER.info(MESSAGES.format(
+                        "StoredSessionData", sessionId, sessionData));
 
-                } else {
-                    LOGGER.error(MESSAGES.format(
-                            "ErrorStoringSessionData", sessionId, sessionData), result.getError());
-                }
+            } else {
+                LOGGER.error(MESSAGES.format(
+                        "ErrorStoringSessionData", sessionId, sessionData), result.getError());
+            }
+        });
+    }
+
+    /**
+     * Invalidate session data for the given session.
+     *
+     * @param sessionId the ID of the session
+     * @param context   the policy context
+     */
+    private void invalidateSession(final String sessionId, final IPolicyContext context) {
+        final ISessionStore sessionStore = SessionStoreFactory.getSessionStore(context);
+        sessionStore.deleteSession(sessionId, result -> {
+            if (result.isSuccess()) {
+                // session data removed
+                LOGGER.info(MESSAGES.format("SessionInvalidated", sessionId));
+
+            } else {
+                // failed to remove session data
+                final String failureMessage = MESSAGES.format("SessionInvalidationFailed", sessionId);
+                LOGGER.error(failureMessage, result.getError());
             }
         });
     }
@@ -293,6 +322,7 @@ public class CookieIssuePolicy extends AbstractMappedDataPolicy<CookieIssueConfi
      * @param apiResponseBody the API response body
      * @return the authenticated principal extracted from the API response
      */
+    @SuppressWarnings("unchecked")
     private String parseApiResponseBody(CookieIssueConfigBean config, byte[] apiResponseBody) {
         // sanity check
         if (null == apiResponseBody || 0 == apiResponseBody.length) {
@@ -304,25 +334,74 @@ public class CookieIssuePolicy extends AbstractMappedDataPolicy<CookieIssueConfi
                 LOGGER.trace(MESSAGES.format("ParsingApiResponseBody", body));
             }
 
+            final Map<String, Object> bodyJson;
             try {
-                // extract response field
-                @SuppressWarnings("unchecked")
-                final Map<String, Object> bodyJson = MAPPER.readValue(body, HashMap.class);
-                final String responseFieldValue = (String) bodyJson.get(config.getApiResponseFieldName());
-
-                if (LOGGER.isTraceEnabled()) {
-                    LOGGER.trace(MESSAGES.format("ExtractedApiResponseField",
-                            config.getApiResponseFieldName(), responseFieldValue));
-                }
-
-                return responseFieldValue;
+                // extract JWT from response
+                bodyJson = MAPPER.readValue(body, HashMap.class);
 
             } catch (IOException e) {
-                LOGGER.error(MESSAGES.format("ErrorParsingApiResponseBody", body), e);
+                throw new RuntimeException(MESSAGES.format("ErrorParsingApiResponseBody", body), e);
+            }
+
+            final String jwt = (String) bodyJson.get(config.getJwtFieldName());
+            if (StringUtils.isBlank(jwt)) {
+                LOGGER.error(MESSAGES.format("JwtFieldNull", config.getJwtFieldName()));
+
+            } else {
+                final String claimValue = validateJwt(config, jwt);
+
+                if (LOGGER.isTraceEnabled()) {
+                    LOGGER.trace(MESSAGES.format("ExtractedClaim", config.getExtractClaim(), claimValue));
+                }
+
+                return claimValue;
             }
         }
 
         // default to empty authenticated principal
         return null;
+    }
+
+    /**
+     * Perform validation on the JWT, and extract the authentication information.
+     *
+     * @param config the policy configuration
+     * @param jwt    the JWT
+     * @return the authentication information
+     */
+    private String validateJwt(CookieIssueConfigBean config, String jwt) {
+        try {
+            final String secret = config.getSigningSecret();
+
+            final JWTVerifier verifier;
+            if (StringUtils.isNotBlank(config.getRequiredAudience()) && StringUtils.isNotBlank(config.getRequiredIssuer())) {
+                verifier = new JWTVerifier(secret, config.getRequiredAudience(), config.getRequiredIssuer());
+            } else if (StringUtils.isNotBlank(config.getRequiredAudience())) {
+                verifier = new JWTVerifier(secret, config.getRequiredAudience());
+            } else {
+                verifier = new JWTVerifier(secret);
+            }
+
+            final Map<String, Object> claims = verifier.verify(jwt);
+            if (LOGGER.isTraceEnabled()) {
+                LOGGER.trace("JWT verification successful - claims: ", claims);
+            } else {
+                LOGGER.debug("JWT verification successful - {} claims present", claims.size());
+            }
+
+            final String auth;
+            if (StringUtils.isNotBlank(config.getExtractClaim())) {
+                LOGGER.trace("Using claim '{}' from JWT for authentication information");
+                auth = (String) claims.get(config.getExtractClaim());
+            } else {
+                LOGGER.trace("Using entire JWT for authentication information");
+                auth = jwt;
+            }
+            return auth;
+
+        } catch (Exception e) {
+            // Invalid Token
+            throw new RuntimeException("JWT verification failed", e);
+        }
     }
 }

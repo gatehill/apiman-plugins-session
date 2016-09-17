@@ -105,7 +105,7 @@ public class CookieValidatePolicyTest extends ApimanPolicyTest {
     @BackEndApi(RequiresAuthHeaderBackEndApi.class)
     public void testAuthenticatedRequestSuccessValidationRequired() throws Throwable {
         // test data - session expires in 60s
-        final Session originalSession = CommonTestUtil.insertTestSession(60, false);
+        final Session originalSession = CommonTestUtil.insertTestSession(60, true);
 
         // make request
         final Session updatedSession = makeSessionRequest(originalSession, true);
@@ -126,7 +126,7 @@ public class CookieValidatePolicyTest extends ApimanPolicyTest {
     @BackEndApi(RequiresAuthHeaderBackEndApi.class)
     public void testAuthenticatedRequestSuccessValidationOptional() throws Throwable {
         // test data - session expires in 60s
-        final Session originalSession = CommonTestUtil.insertTestSession(60, false);
+        final Session originalSession = CommonTestUtil.insertTestSession(60, true);
 
         // make request
         final Session updatedSession = makeSessionRequest(originalSession, true);
@@ -147,7 +147,7 @@ public class CookieValidatePolicyTest extends ApimanPolicyTest {
     @BackEndApi(EchoBackEndApi.class)
     public void testUnauthenticatedRequestSuccessValidationOptional() throws Throwable {
         // test data - session expires in 60s
-        final Session originalSession = CommonTestUtil.insertTestSession(60, false);
+        final Session originalSession = CommonTestUtil.insertTestSession(60, true);
 
         // make request
         final Session updatedSession = makeSessionRequest(originalSession, false);
@@ -167,7 +167,7 @@ public class CookieValidatePolicyTest extends ApimanPolicyTest {
     @BackEndApi(EchoBackEndApi.class)
     public void testExpiredSessionRequestSuccessValidationOptional() throws Throwable {
         // test data - session has already expired
-        final Session originalSession = CommonTestUtil.insertTestSession(-60, false);
+        final Session originalSession = CommonTestUtil.insertTestSession(-60, true);
 
         // make request
         final Session updatedSession = makeSessionRequest(originalSession, false);
@@ -187,7 +187,7 @@ public class CookieValidatePolicyTest extends ApimanPolicyTest {
     @BackEndApi(RequiresAuthHeaderBackEndApi.class)
     public void testAuthenticatedRequestFailureExpiredSession() throws Throwable {
         // test data - session has already expired
-        final Session originalSession = CommonTestUtil.insertTestSession(-60, false);
+        final Session originalSession = CommonTestUtil.insertTestSession(-60, true);
 
         // wait for the clock to tick to ensure we can test the updated expiration time
         Thread.sleep(100);
@@ -210,7 +210,7 @@ public class CookieValidatePolicyTest extends ApimanPolicyTest {
     @BackEndApi(RequiresAuthHeaderBackEndApi.class)
     public void testAuthenticatedRequestFailureTerminatedSession() throws Throwable {
         // test data - session is terminated
-        final Session originalSession = CommonTestUtil.insertTestSession(60, true);
+        final Session originalSession = CommonTestUtil.insertTestSession(60, false);
 
         // wait for the clock to tick to ensure we can test the updated expiration time
         Thread.sleep(100);
@@ -233,7 +233,7 @@ public class CookieValidatePolicyTest extends ApimanPolicyTest {
     @BackEndApi(RequiresAuthHeaderBackEndApi.class)
     public void testAuthenticatedRequestFailureNoCookie() throws Throwable {
         // test data - session expires in 60s
-        final Session originalSession = CommonTestUtil.insertTestSession(60, false);
+        final Session originalSession = CommonTestUtil.insertTestSession(60, true);
 
         // wait for the clock to tick to ensure we can test the updated expiration time
         Thread.sleep(100);
@@ -255,7 +255,7 @@ public class CookieValidatePolicyTest extends ApimanPolicyTest {
     @BackEndApi(RequiresAuthHeaderBackEndApi.class)
     public void testAuthenticatedRequestExceptionEmptyConfig() throws Throwable {
         // test data - session expires in 60s
-        final Session originalSession = CommonTestUtil.insertTestSession(60, false);
+        final Session originalSession = CommonTestUtil.insertTestSession(60, true);
 
         // send request with cookie
         final PolicyTestRequest request = PolicyTestRequest.build(PolicyTestRequestType.GET, RESOURCE);

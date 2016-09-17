@@ -1,5 +1,7 @@
 package io.apiman.plugins.session.test;
 
+import io.apiman.common.logging.DefaultDelegateFactory;
+import io.apiman.common.logging.IDelegateFactory;
 import io.apiman.gateway.engine.IComponentRegistry;
 import io.apiman.gateway.engine.async.IAsyncResult;
 import io.apiman.gateway.engine.async.IAsyncResultHandler;
@@ -25,6 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class CommonTestUtil {
     public static final String AUTHENTICATED_PRINICPAL = "apiman";
     public static final String COOKIE_NAME = "XSESSION";
+    public static final String JWT_SIGNING_SECRET = "jwt!53cre7";
 
     /**
      * Performs a deep copy of an object, returning a new instance with the
@@ -44,7 +47,8 @@ public class CommonTestUtil {
     private static ISessionStore getSessionStore() {
         final EngineImpl engine = (EngineImpl) ApimanPolicyTest.tester.getEngine();
         final IComponentRegistry componentRegistry = engine.getComponentRegistry();
-        return SessionStoreFactory.getSessionStore(new PolicyContextImpl(componentRegistry));
+        final IDelegateFactory loggerFactory = new DefaultDelegateFactory();
+        return SessionStoreFactory.getSessionStore(new PolicyContextImpl(componentRegistry, loggerFactory));
     }
 
     /**
@@ -101,16 +105,16 @@ public class CommonTestUtil {
      * Note: the returned object is deep copied as the Session in the store gets updated by reference.
      *
      * @param validityPeriod the validity period in seconds - negative will mean the Session has already expired
-     * @param terminated     whether the Session is terminated
+     * @param current     whether the Session is current
      * @return a test Session
      */
-    public static Session insertTestSession(int validityPeriod, boolean terminated) {
+    public static Session insertTestSession(int validityPeriod, boolean current) {
         final Session session = SessionUtil.buildSession(
                 UUID.randomUUID().toString(),
                 AUTHENTICATED_PRINICPAL,
                 validityPeriod);
 
-        session.setTerminated(terminated);
+        session.setCurrent(current);
         storeSession(session);
 
         // deep copy AFTER storage
