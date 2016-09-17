@@ -7,6 +7,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - ...
 
+## [1.2.0] - 2016-09-17
+### Added
+- Bumps apiman base version to 1.2.4.Final.
+- Switches to Java 8 as a minimum.
+- JWT support! Replaces expectation of a plain JSON response token with a signed JWT.
+- Issuer plugin invalidates session on failure to parse API response.
+
 ## [1.1.4] - 2016-03-07
 ### Added
 - Bumps apiman base version to 1.2.2.Final.

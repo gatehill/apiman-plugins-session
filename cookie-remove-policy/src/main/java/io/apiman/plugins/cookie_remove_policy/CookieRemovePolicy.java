@@ -67,13 +67,10 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
                 .validate("Force cookie removal setting", config.getForceCookieRemoval())
                 .validate("Response behaviour", config.getResponseBehaviour())
                 .validate("Path matcher", config.getPathMatcher())
-                .validate("Redirect URL", new ConfigValidator.Validator() {
-                    @Override
-                    public boolean isValid() {
-                        // redirect URL should be set
-                        return (ResponseBehaviour.PassThrough.equals(config.getResponseBehaviour()) ||
-                                StringUtils.isNotBlank(config.getRedirectUrl()));
-                    }
+                .validate("Redirect URL", () -> {
+                    // redirect URL should be set
+                    return (ResponseBehaviour.PassThrough.equals(config.getResponseBehaviour()) ||
+                            StringUtils.isNotBlank(config.getRedirectUrl()));
                 });
 
         if (!validator.isValid()) {
@@ -273,24 +270,21 @@ public class CookieRemovePolicy extends AbstractMappedDataPolicy<CookieRemoveCon
                                    final IPolicyChain<ApiRequest> chain, final CookieRemoveConfigBean config) {
 
         final ISessionStore sessionStore = SessionStoreFactory.getSessionStore(context);
-        sessionStore.deleteSession(sessionId, new IAsyncResultHandler<Void>() {
-            @Override
-            public void handle(IAsyncResult<Void> result) {
-                if (result.isSuccess()) {
-                    // session data removed
-                    LOGGER.info(MESSAGES.format("SessionInvalidated", sessionId));
-                    doContinue(request, context, config, chain);
+        sessionStore.deleteSession(sessionId, result -> {
+            if (result.isSuccess()) {
+                // session data removed
+                LOGGER.info(MESSAGES.format("SessionInvalidated", sessionId));
+                doContinue(request, context, config, chain);
 
-                } else {
-                    // failed to remove session data
-                    final String failureMessage = MESSAGES.format(
-                            "SessionInvalidationFailed", sessionId);
-                    LOGGER.error(failureMessage, result.getError());
+            } else {
+                // failed to remove session data
+                final String failureMessage = MESSAGES.format(
+                        "SessionInvalidationFailed", sessionId);
+                LOGGER.error(failureMessage, result.getError());
 
-                    // policy failure
-                    chain.doFailure(new PolicyFailure(PolicyFailureType.Other,
-                            HttpURLConnection.HTTP_INTERNAL_ERROR, failureMessage));
-                }
+                // policy failure
+                chain.doFailure(new PolicyFailure(PolicyFailureType.Other,
+                        HttpURLConnection.HTTP_INTERNAL_ERROR, failureMessage));
             }
         });
     }

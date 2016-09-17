@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.apiman.plugins</groupId>
         <artifactId>apiman-plugins-session</artifactId>
-        <version>1.1.5-SNAPSHOT</version>
+        <version>1.2.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>apiman-plugins-session-common-test</artifactId>
@@ -34,6 +34,11 @@
         <dependency>
             <groupId>io.apiman</groupId>
             <artifactId>apiman-gateway-engine-policies</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.apiman</groupId>
+            <artifactId>apiman-common-util</artifactId>
             <scope>provided</scope>
         </dependency>
 

@@ -7,4 +7,3 @@ before_install:
 
 jdk:
   - oraclejdk8
-  - openjdk7

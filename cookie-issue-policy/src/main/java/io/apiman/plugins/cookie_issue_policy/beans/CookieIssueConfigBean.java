@@ -12,8 +12,6 @@ public class CookieIssueConfigBean extends AbstractCookieConfigBean {
     @JsonProperty
     private Integer apiResponseCode;
     @JsonProperty
-    private String apiResponseFieldName;
-    @JsonProperty
     private Boolean cookieSecure;
     @JsonProperty
     private Boolean cookieHttpOnly;
@@ -23,6 +21,16 @@ public class CookieIssueConfigBean extends AbstractCookieConfigBean {
      */
     @JsonProperty
     private Integer validityPeriod;
+    @JsonProperty
+    private String jwtFieldName;
+    @JsonProperty
+    private String extractClaim;
+    @JsonProperty
+    private String signingSecret;
+    @JsonProperty
+    private String requiredAudience;
+    @JsonProperty
+    private String requiredIssuer;
 
     public Integer getApiResponseCode() {
         return apiResponseCode;
@@ -30,14 +38,6 @@ public class CookieIssueConfigBean extends AbstractCookieConfigBean {
 
     public void setApiResponseCode(Integer apiResponseCode) {
         this.apiResponseCode = apiResponseCode;
-    }
-
-    public String getApiResponseFieldName() {
-        return apiResponseFieldName;
-    }
-
-    public void setApiResponseFieldName(String apiResponseFieldName) {
-        this.apiResponseFieldName = apiResponseFieldName;
     }
 
     public Integer getValidityPeriod() {
@@ -62,5 +62,45 @@ public class CookieIssueConfigBean extends AbstractCookieConfigBean {
 
     public void setCookieHttpOnly(Boolean cookieHttpOnly) {
         this.cookieHttpOnly = cookieHttpOnly;
+    }
+
+    public String getJwtFieldName() {
+        return jwtFieldName;
+    }
+
+    public void setJwtFieldName(String jwtFieldName) {
+        this.jwtFieldName = jwtFieldName;
+    }
+
+    public String getExtractClaim() {
+        return extractClaim;
+    }
+
+    public void setExtractClaim(String extractClaim) {
+        this.extractClaim = extractClaim;
+    }
+
+    public String getSigningSecret() {
+        return signingSecret;
+    }
+
+    public void setSigningSecret(String signingSecret) {
+        this.signingSecret = signingSecret;
+    }
+
+    public String getRequiredAudience() {
+        return requiredAudience;
+    }
+
+    public void setRequiredAudience(String requiredAudience) {
+        this.requiredAudience = requiredAudience;
+    }
+
+    public String getRequiredIssuer() {
+        return requiredIssuer;
+    }
+
+    public void setRequiredIssuer(String requiredIssuer) {
+        this.requiredIssuer = requiredIssuer;
     }
 }

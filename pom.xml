@@ -6,11 +6,11 @@
         <artifactId>apiman-plugins</artifactId>
 
         <!-- the version of apiman on which this plugin depends -->
-        <version>1.2.2.Final</version>
+        <version>1.2.4.Final</version>
     </parent>
 
     <artifactId>apiman-plugins-session</artifactId>
-    <version>1.1.5-SNAPSHOT</version>
+    <version>1.2.0</version>
     <name>apiman-plugins-session</name>
     <packaging>pom</packaging>
 
@@ -39,8 +39,13 @@
     </developers>
 
     <properties>
-        <version.session.plugins>1.1.5-SNAPSHOT</version.session.plugins>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+
+        <version.apiman.core>1.2.4.Final</version.apiman.core>
+        <version.session.plugins>1.2.0</version.session.plugins>
         <version.org.slf4j>1.7.2</version.org.slf4j>
+        <version.com.auth0>2.2.0</version.com.auth0>
     </properties>
 
     <modules>
@@ -62,6 +67,18 @@
                 <groupId>io.apiman.plugins</groupId>
                 <artifactId>apiman-plugins-session-common-test</artifactId>
                 <version>${version.session.plugins}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.apiman</groupId>
+                <artifactId>apiman-common-util</artifactId>
+                <version>${version.apiman.core}</version>
+            </dependency>
+
+            <!-- non-core dependencies -->
+            <dependency>
+                <groupId>com.auth0</groupId>
+                <artifactId>java-jwt</artifactId>
+                <version>${version.com.auth0}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

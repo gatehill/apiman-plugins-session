@@ -29,7 +29,7 @@ public class SessionUtil {
         session.setExpires(expiresMillis);
         session.setAbsoluteExpiry(absoluteExpiryMillis);
         session.setAuthenticatedPrincipal(authenticatedPrincipal);
-        session.setTerminated(false);
+        session.setCurrent(true);
 
         return session;
     }

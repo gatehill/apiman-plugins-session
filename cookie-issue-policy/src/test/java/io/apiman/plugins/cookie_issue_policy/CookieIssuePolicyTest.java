@@ -62,6 +62,7 @@ public class CookieIssuePolicyTest extends ApimanPolicyTest {
         // verify the session data in the shared state
         final Session session = CommonTestUtil.fetchSession(sessionId);
         assertNotNull(session);
+        assertTrue(session.isCurrent());
         assertEquals(sessionId, session.getSessionId());
         assertEquals(CommonTestUtil.AUTHENTICATED_PRINICPAL, session.getAuthenticatedPrincipal());
 
@@ -70,6 +71,37 @@ public class CookieIssuePolicyTest extends ApimanPolicyTest {
         assertTrue(TimeUtil.isAfterNow(session.getExpires()));
         assertTrue(TimeUtil.isAfterNow(session.getAbsoluteExpiry()));
         assertEquals(120000, session.getValidityPeriod());
+    }
+
+    /**
+     * Expects that the session is not current if the back-end service provides an invalid token.
+     *
+     * @throws Throwable
+     */
+    @Test
+    @Configuration(classpathConfigFile = "standard-config.json")
+    @BackEndApi(LoginBackEndApi.class)
+    public void testLoginFailureInvalidJwt() throws Throwable {
+        final PolicyTestRequest request = PolicyTestRequest.build(PolicyTestRequestType.GET, RESOURCE);
+        request.body(LoginBackEndApi.INVALID_JWT_BODY);
+
+        final PolicyTestResponse response = send(request);
+        assertEquals(HttpURLConnection.HTTP_MOVED_TEMP, response.code());
+
+        // verify the cookie was set
+        final String cookieHeader = response.header(Constants.HEADER_SET_COOKIE);
+        assertNotNull(cookieHeader);
+
+        final Cookie cookie = CookieUtil.parseResponseCookie(cookieHeader);
+        assertEquals(CommonTestUtil.COOKIE_NAME, cookie.getName());
+
+        final String sessionId = cookie.getValue();
+        assertNotNull(sessionId);
+
+        // verify the session is not current
+        final Session session = CommonTestUtil.fetchSession(sessionId);
+        assertNotNull(session);
+        assertFalse(session.isCurrent());
     }
 
     /**

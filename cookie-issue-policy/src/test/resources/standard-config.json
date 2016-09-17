@@ -4,9 +4,13 @@
   "cookiePath": "/",
   "cookieSecure": true,
   "cookieHttpOnly": true,
-  "apiResponseFieldName": "username",
   "validityPeriod": 120,
   "responseBehaviour": "Redirect",
+  "jwtFieldName": "access_token",
+  "extractClaim": "sub",
+  "signingSecret": "jwt!53cre7",
+  "requiredAudience": "https://example.com/gw",
+  "requiredIssuer": "https://example.com/idp",
   "redirectUrl": "/another/url",
   "pathMatcher": ".*"
 }
