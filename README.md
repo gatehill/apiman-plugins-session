@@ -1,6 +1,6 @@
 # apiman-plugins-session [![Build Status](https://travis-ci.org/outofcoffee/apiman-plugins-session.svg?branch=master)](https://travis-ci.org/outofcoffee/apiman-plugins-session)
 
-A suite of [apiman](http://apiman.io) plugins providing simple web session management using [cookies](https://tools.ietf.org/html/rfc6265).
+A suite of [apiman](http://apiman.io) plugins providing simple web session management using [JWT](https://jwt.io) and [cookies](https://tools.ietf.org/html/rfc6265).
 
 ## Overview
 
