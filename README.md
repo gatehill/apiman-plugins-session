@@ -24,14 +24,14 @@ Authentication is delegated to a back-end service, which is expected to provide 
     Content-Type: application/json
     
     {
-      "access_token": "your-jwt-here"
+      "id_token": "your-jwt-here"
     }
 
 You configure the 'Cookie Issue Policy' to look for this token and issue a session cookie.
 
 You can optionally extract a Claim from the JWT response (for example, 'sub’; the subject), which will be added to the request headers of subsequent incoming requests to your back-end services. This allows your services to know which user made the request. If you don't explicitly choose a Claim to extract, the whole JWT will be passed to your back-end service as a header instead.
 
-> Note: The JWT should be signed using the _HS256_ algorithm, and using the _Signing secret_ set in the plugin configuration.
+> Note: The JWT should be signed using the _Signing secret_ set in the plugin configuration.
 
 ## Validating session cookies
 
