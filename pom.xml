@@ -6,7 +6,7 @@
         <artifactId>apiman-plugins</artifactId>
 
         <!-- the version of apiman on which this plugin depends -->
-        <version>1.2.4.Final</version>
+        <version>1.2.9.Final</version>
     </parent>
 
     <artifactId>apiman-plugins-session</artifactId>
@@ -42,10 +42,11 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
 
-        <version.apiman.core>1.2.4.Final</version.apiman.core>
+        <version.apiman.core>1.2.9.Final</version.apiman.core>
         <version.session.plugins>1.2.1-SNAPSHOT</version.session.plugins>
         <version.org.slf4j>1.7.2</version.org.slf4j>
         <version.com.auth0>2.2.0</version.com.auth0>
+        <version.com.hazelcast>3.6.4</version.com.hazelcast>
     </properties>
 
     <modules>
@@ -54,6 +55,9 @@
         <module>cookie-issue-policy</module>
         <module>cookie-validate-policy</module>
         <module>cookie-remove-policy</module>
+
+        <!-- shared state plugins -->
+        <module>apiman-gateway-engine-hazelcast</module>
     </modules>
 
     <dependencyManagement>
@@ -68,17 +72,56 @@
                 <artifactId>apiman-plugins-session-common-test</artifactId>
                 <version>${version.session.plugins}</version>
             </dependency>
+
+            <!-- apiman extensions -->
+            <dependency>
+                <groupId>io.apiman</groupId>
+                <artifactId>apiman-gateway-engine-hazelcast</artifactId>
+                <version>${version.apiman.core}</version>
+            </dependency>
+
+            <!-- apiman dependencies -->
+            <dependency>
+                <groupId>io.apiman</groupId>
+                <artifactId>apiman-gateway-engine-beans</artifactId>
+                <version>${version.apiman.core}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.apiman</groupId>
+                <artifactId>apiman-gateway-engine-core</artifactId>
+                <version>${version.apiman.core}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.apiman</groupId>
+                <artifactId>apiman-gateway-engine-policies</artifactId>
+                <version>${version.apiman.core}</version>
+            </dependency>
             <dependency>
                 <groupId>io.apiman</groupId>
                 <artifactId>apiman-common-util</artifactId>
                 <version>${version.apiman.core}</version>
             </dependency>
+            <dependency>
+                <groupId>io.apiman</groupId>
+                <artifactId>apiman-gateway-engine-hazelcast</artifactId>
+                <version>${version.apiman.core}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.apiman</groupId>
+                <artifactId>apiman-common-logging-core</artifactId>
+                <version>${version.apiman.core}</version>
+            </dependency>
 
-            <!-- non-core dependencies -->
+            <!-- third party dependencies -->
             <dependency>
                 <groupId>com.auth0</groupId>
                 <artifactId>java-jwt</artifactId>
                 <version>${version.com.auth0}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hazelcast</groupId>
+                <artifactId>hazelcast</artifactId>
+                <version>${version.com.hazelcast}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

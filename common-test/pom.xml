@@ -41,6 +41,11 @@
             <artifactId>apiman-common-util</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>io.apiman</groupId>
+            <artifactId>apiman-common-logging-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
         <!-- testing -->
         <dependency>

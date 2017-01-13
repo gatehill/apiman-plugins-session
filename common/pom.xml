@@ -24,6 +24,12 @@
             <artifactId>commons-lang</artifactId>
         </dependency>
 
+        <!-- apiman extensions -->
+        <dependency>
+            <groupId>io.apiman</groupId>
+            <artifactId>apiman-gateway-engine-hazelcast</artifactId>
+        </dependency>
+
         <!-- apiman dependencies (must be excluded from the WAR) -->
         <dependency>
             <groupId>io.apiman</groupId>
