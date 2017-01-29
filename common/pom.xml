@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.apiman.plugins</groupId>
         <artifactId>apiman-plugins-session</artifactId>
-        <version>1.2.1-SNAPSHOT</version>
+        <version>1.2.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>apiman-plugins-session-common</artifactId>
@@ -22,6 +22,12 @@
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
+        </dependency>
+
+        <!-- apiman extensions -->
+        <dependency>
+            <groupId>io.apiman</groupId>
+            <artifactId>apiman-gateway-engine-hazelcast</artifactId>
         </dependency>
 
         <!-- apiman dependencies (must be excluded from the WAR) -->
