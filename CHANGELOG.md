@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.2.1] - 2017-01-29
 ### Added
 - Bumps apiman base version to 1.2.9.Final.
 - Adds a Hazelcast implementation for rate limiting and shared state.

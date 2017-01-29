@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>apiman-plugins-session</artifactId>
-    <version>1.2.1-SNAPSHOT</version>
+    <version>1.2.1</version>
     <name>apiman-plugins-session</name>
     <packaging>pom</packaging>
 
@@ -43,7 +43,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
 
         <version.apiman.core>1.2.9.Final</version.apiman.core>
-        <version.session.plugins>1.2.1-SNAPSHOT</version.session.plugins>
+        <version.session.plugins>1.2.1</version.session.plugins>
         <version.org.slf4j>1.7.2</version.org.slf4j>
         <version.com.auth0>2.2.0</version.com.auth0>
         <version.com.hazelcast>3.6.4</version.com.hazelcast>
